@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jahia.modules</groupId>
+        <artifactId>jahia-modules</artifactId>
+        <version>7.3.1.0</version>
+    </parent>
+    <artifactId>tomcat-log-provider</artifactId>
+    <name>Tomcat Log Provider</name>
+    <description>Give access to the logs of the running Tomcat in read-only</description>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>bundle</packaging>
+    <scm>
+        <connection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</developerConnection>
+        <url>scm:git:git@github.com:Jahia/tomcat-log-provider.git</url>
+        <tag>HEAD</tag>
+    </scm>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    <properties>
+        <jahia-depends>external-provider,serverSettings</jahia-depends>
+        <jahia-module-type>system</jahia-module-type>
+        <export-package>org.jahia.modules.external.tomcat.log,org.jahia.modules.external.tomcat.log.factory</export-package>
+    </properties>
+    <dependencies>
+        <dependency>
+            <groupId>org.jahia.modules</groupId>
+            <artifactId>external-provider</artifactId>
+            <version>3.3.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <id>jahia-public</id>
+            <name>Jahia Public Repository</name>
+            <url>https://devtools.jahia.com/nexus/content/groups/public</url>
+        </repository>
+    </repositories>
+</project>

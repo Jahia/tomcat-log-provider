@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<content xmlns:j="http://www.jahia.org/jahia/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0">
+    <modules jcr:primaryType="jnt:modules">
+        <tomcat-log-provider j:dependencies="default external-provider serverSettings"
+                             j:modulePriority="0"
+                             j:moduleType="system"
+                             j:title="Tomcat Log Provider"
+                             jcr:primaryType="jnt:module">
+                
+                <portlets jcr:primaryType="jnt:portletFolder"/>
+                <files jcr:primaryType="jnt:folder"/>
+                <contents jcr:primaryType="jnt:contentFolder">
+                    <tomcat-log-mount-point-factory j:mountPointType="jnt:tomcatLogMountPoint"
+                                     j:templateName="tomcat-log-factory"
+                                     jcr:primaryType="jnt:tomcatLogMountPointFactoryPage">
+                        <j:translation_en jcr:language="en"
+                                 jcr:mixinTypes="mix:title"
+                                 jcr:primaryType="jnt:translation"
+                                 jcr:title="tomcat log mount point factory"/>
+                    </tomcat-log-mount-point-factory>
+                </contents>
+                <templates jcr:primaryType="jnt:templatesFolder">
+                    <files jcr:primaryType="jnt:folder"/>
+                    <contents jcr:primaryType="jnt:contentFolder"/>
+                    <base j:hiddenTemplate="false"
+                  j:view="serverSettings"
+                  jcr:primaryType="jnt:template">
+                        <j:translation_en jcr:language="en"
+                                 jcr:mixinTypes="mix:title"
+                                 jcr:primaryType="jnt:translation"
+                                 jcr:title="base"/>
+                        <tomcat-log-factory j:applyOn="jnt:tomcatLogMountPointFactoryPage"
+                            j:defaultTemplate="true"
+                            j:hiddenTemplate="false"
+                            j:requiredPermissionNames="adminMountPoints"
+                            jcr:primaryType="jnt:contentTemplate">
+                            <j:translation_en jcr:language="en"
+                                    jcr:mixinTypes="mix:title"
+                                    jcr:primaryType="jnt:translation"
+                                    jcr:title="tomcat-log-factory"/>
+                            <pagecontent jcr:primaryType="jnt:contentList">
+                                <tomcat-log-mount-point-factory-form jcr:primaryType="jnt:tomcatLogPointFactoryForm">
+                                    <j:translation_en jcr:language="en"
+                                          jcr:mixinTypes="mix:title"
+                                          jcr:primaryType="jnt:translation"
+                                          jcr:title="tomcat log mount point factory form"/>
+                                </tomcat-log-mount-point-factory-form>
+                            </pagecontent>
+                        </tomcat-log-factory>
+                    </base>
+                    <base-jahia-anthracite j:hiddenTemplate="false"
+                                   j:view="settingsBootstrap3GoogleMaterialStyle"
+                                   jcr:primaryType="jnt:template">
+                        <j:translation_en jcr:language="en"
+                                 jcr:mixinTypes="mix:title"
+                                 jcr:primaryType="jnt:translation"
+                                 jcr:title="base-jahia-anthracite"/>
+                        <tomcat-log-factory-jahia-anthracite j:applyOn="jnt:tomcatLogMountPointFactoryPage"
+                            j:defaultTemplate="true"
+                            j:hiddenTemplate="false"
+                            j:requiredPermissionNames="adminMountPoints"
+                            j:view="settingsBootstrap3GoogleMaterialStyle"
+                            jcr:primaryType="jnt:contentTemplate">
+                            <j:translation_en jcr:language="en"
+                                    jcr:mixinTypes="mix:title"
+                                    jcr:primaryType="jnt:translation"
+                                    jcr:title="tomcat-log-factory-jahia-anthracite"/>
+                            <pagecontent jcr:primaryType="jnt:contentList">
+                                <tomcat-log-mount-point-factory-form-jahia-anthracite j:view="settingsBootstrap3GoogleMaterialStyle"
+                                                   jcr:mixinTypes="jmix:renderable"
+                                                   jcr:primaryType="jnt:tomcatLogPointFactoryForm">
+                                    <j:translation_en jcr:language="en"
+                                          jcr:mixinTypes="mix:title"
+                                          jcr:primaryType="jnt:translation"
+                                          jcr:title="tomcat log mount point factory form"/>
+                                </tomcat-log-mount-point-factory-form-jahia-anthracite>
+                            </pagecontent>
+                        </tomcat-log-factory-jahia-anthracite>
+                    </base-jahia-anthracite>
+                </templates>
+                
+            </tomcat-log-provider>
+    </modules>
+</content>
