@@ -39,7 +39,7 @@
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>external-provider</artifactId>
-            <version>3.3.0</version>
+            <version>3.2.2</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
