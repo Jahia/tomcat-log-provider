@@ -9,13 +9,13 @@
     <artifactId>tomcat-log-provider</artifactId>
     <name>Tomcat Log Provider</name>
     <description>Give access to the logs of the running Tomcat in read-only</description>
-    <version>1.1-SNAPSHOT</version>
+    <version>1.1</version>
     <packaging>bundle</packaging>
     <scm>
         <connection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</connection>
         <developerConnection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</developerConnection>
         <url>scm:git:git@github.com:Jahia/tomcat-log-provider.git</url>
-        <tag>HEAD</tag>
+        <tag>1_1</tag>
     </scm>
     <build>
         <plugins>
