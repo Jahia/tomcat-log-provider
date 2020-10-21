@@ -152,7 +152,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
                 } else {
                     switch (fileObject.getType()) {
                         case FILE:
-                            return List.copyOf(JCR_CONTENT_LIST);
+                            return new ArrayList<>(JCR_CONTENT_LIST);
                         case FOLDER:
                             final FileObject[] files = fileObject.getChildren();
                             if (files.length > 0) {
