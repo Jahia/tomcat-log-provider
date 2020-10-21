@@ -1,7 +1,16 @@
 package org.jahia.modules.external.tomcat.log;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.jcr.Binary;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;

@@ -4,12 +4,12 @@
     <parent>
         <groupId>org.jahia.modules</groupId>
         <artifactId>jahia-modules</artifactId>
-        <version>7.3.1.0</version>
+        <version>8.0.1.0</version>
     </parent>
     <artifactId>tomcat-log-provider</artifactId>
     <name>Tomcat Log Provider</name>
     <description>Give access to the logs of the running Tomcat in read-only</description>
-    <version>1.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <packaging>bundle</packaging>
     <scm>
         <connection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</connection>
@@ -31,15 +31,17 @@
         </plugins>
     </build>
     <properties>
+        <export-package>org.jahia.modules.external.tomcat.log,org.jahia.modules.external.tomcat.log.factory</export-package>
         <jahia-depends>external-provider,serverSettings</jahia-depends>
         <jahia-module-type>system</jahia-module-type>
-        <export-package>org.jahia.modules.external.tomcat.log,org.jahia.modules.external.tomcat.log.factory</export-package>
+        <jahia-module-signature>MCwCFG+pZthHBbcrglMtvVJrzYCUX+4DAhQjyUxV+Xk11P2JnmJVNW/+dT4Q8A==</jahia-module-signature>
+        <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
     </properties>
     <dependencies>
         <dependency>
             <groupId>org.jahia.modules</groupId>
             <artifactId>external-provider</artifactId>
-            <version>3.2.2</version>
+            <version>4.0.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
