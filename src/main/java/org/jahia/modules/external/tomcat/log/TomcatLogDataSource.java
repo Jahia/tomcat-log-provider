@@ -27,11 +27,15 @@ import org.apache.jackrabbit.util.ISO8601;
 import org.jahia.api.Constants;
 import org.jahia.modules.external.ExternalData;
 import org.jahia.modules.external.ExternalDataSource;
+import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.JCRContentUtils;
+import org.jahia.services.content.decorator.JCRUserNode;
+import org.jahia.services.sites.JahiaSitesService;
+import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSource.Writable, ExternalDataSource.CanLoadChildrenInBatch {
+public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSource.Writable, ExternalDataSource.CanLoadChildrenInBatch, ExternalDataSource.SupportPrivileges {
 
     private static final List<String> JCR_CONTENT_LIST = Arrays.asList(Constants.JCR_CONTENT);
     private static final Set<String> SUPPORTED_NODE_TYPES = new HashSet<>(Arrays.asList(Constants.JAHIANT_FILE, Constants.JAHIANT_FOLDER, Constants.JCR_CONTENT));
@@ -250,6 +254,20 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     @Override
     public void move(String oldPath, String newPath) throws RepositoryException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public String[] getPrivilegesNames(String username, String path) {
+        final JahiaUserManagerService userManagerService = JahiaUserManagerService.getInstance();
+        final JCRUserNode userNode = userManagerService.lookupUser(username);
+        final String[] privileges;
+        if (ServicesRegistry.getInstance().getJahiaGroupManagerService().isAdminMember(userNode.getName(), JahiaSitesService.SYSTEM_SITE_KEY)) {
+            privileges = new String[1];
+            privileges[0] = Constants.JCR_READ_RIGHTS + "_" + Constants.EDIT_WORKSPACE;
+        } else {
+            privileges = new String[0];
+        }
+        return privileges;
     }
 
     private ExternalData getFile(FileObject fileObject) throws FileSystemException {
