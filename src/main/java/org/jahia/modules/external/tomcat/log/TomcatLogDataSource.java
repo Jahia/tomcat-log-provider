@@ -110,15 +110,10 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
             String unescapedPath = JCRContentUtils.unescapeLocalNodeName(path);
             if (path.endsWith(JCR_CONTENT_SUFFIX)) {
                 FileObject fileObject = getFile(StringUtils.substringBeforeLast(unescapedPath, JCR_CONTENT_SUFFIX));
-                if (!fileObject.exists()) {
+                if (!fileObject.exists() || fileObject.getType() == FileType.FOLDER) {
                     throw new PathNotFoundException(path);
                 }
-                if(fileObject.getType() == FileType.FOLDER) {
-                    return getFile(fileObject);
-                }else {
-                    FileContent content = fileObject.getContent();
-                    return getFileContent(content);
-                }
+                return getFileContent(fileObject.getContent());
             } else {
                 FileObject fileObject = getFile(unescapedPath);
                 if (!fileObject.exists()) {
