@@ -1,0 +1,15 @@
+query getLogFile($path: String!) {
+    jcr {
+        nodeByPath(path: $path) {
+            name
+            primaryNodeType {
+                name
+            }
+            descendant(relPath: "jcr:content") {
+                property(name: "jcr:mimeType") {
+                    value
+                }
+            }
+        }
+    }
+}

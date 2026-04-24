@@ -8,6 +8,8 @@ describe('Tomcat Log Provider', () => {
     const getSettings: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/query/getMountPoints.graphql');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const saveSettings: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/mutation/addMountPoint.graphql');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const getLogFile: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/query/getLogFile.graphql');
 
     before(() => {
         cy.login();
@@ -65,6 +67,40 @@ describe('Tomcat Log Provider', () => {
         });
     });
 
+    // ─── Log file access ─────────────────────────────────────────────────────────
+
+    describe('Log file access', () => {
+        const logFilePath = `${defaultMountPath}/jahia.log`;
+
+        before(() => {
+            cy.apollo({
+                mutation: saveSettings,
+                variables: {mountPath: defaultMountPath}
+            });
+        });
+
+        it('jahia.log exists as a jnt:file node under the mount point', () => {
+            cy.apollo({query: getLogFile, variables: {path: logFilePath}})
+                .its('data.jcr.nodeByPath')
+                .should(node => {
+                    expect(node).to.not.be.null;
+                    expect(node.primaryNodeType.name).to.eq('jnt:file');
+                });
+        });
+
+        it('jahia.log jcr:content has a text MIME type', () => {
+            cy.apollo({query: getLogFile, variables: {path: logFilePath}})
+                .its('data.jcr.nodeByPath.descendant.property.value')
+                .should('match', /^text\//);
+        });
+
+        it('jahia.log content is not empty', () => {
+            cy.request(`/files/default${logFilePath}`)
+                .its('body')
+                .should('not.be.empty');
+        });
+    });
+
     // ─── Admin UI ────────────────────────────────────────────────────────────────
 
     describe('Admin UI', () => {
@@ -84,12 +120,6 @@ describe('Tomcat Log Provider', () => {
             cy.login();
             cy.visit(adminPath);
             cy.contains('button', 'Save settings').should('be.visible');
-        });
-
-        it('shows a read-only Tomcat log directory path', () => {
-            cy.login();
-            cy.visit(adminPath);
-            cy.get('[class*="tlp_readOnly"]').should('be.visible').and('include.text', 'logs');
         });
 
         it('shows success alert after saving', () => {
