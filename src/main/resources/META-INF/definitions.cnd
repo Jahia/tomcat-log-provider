@@ -4,9 +4,3 @@
 <j = 'http://www.jahia.org/jahia/1.0'>
 <jnt = 'http://www.jahia.org/jahia/nt/1.0'>
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
-
-[jnt:tomcatLogMountPoint] > jnt:mountPoint
-
-[jnt:tomcatLogMountPointFactoryPage] >  jnt:content, jmix:siteComponent, mix:title, jmix:studioOnly, jmix:mountPointFactory
-
-[jnt:tomcatLogPointFactoryForm] >  jnt:content, jmix:siteComponent, mix:title, jmix:studioOnly

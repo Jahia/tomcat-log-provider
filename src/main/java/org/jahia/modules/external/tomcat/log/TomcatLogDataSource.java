@@ -1,27 +1,7 @@
 package org.jahia.modules.external.tomcat.log;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import javax.jcr.Binary;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.FileContent;
-import org.apache.commons.vfs2.FileObject;
-import org.apache.commons.vfs2.FileSystemException;
-import org.apache.commons.vfs2.FileSystemManager;
-import org.apache.commons.vfs2.FileType;
-import org.apache.commons.vfs2.VFS;
+import org.apache.commons.vfs2.*;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.util.ISO8601;
 import org.jahia.api.Constants;
@@ -35,9 +15,16 @@ import org.jahia.services.usermanager.JahiaUserManagerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.Binary;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
+import java.io.File;
+import java.util.*;
+
 public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSource.Writable, ExternalDataSource.CanLoadChildrenInBatch, ExternalDataSource.SupportPrivileges {
 
-    private static final List<String> JCR_CONTENT_LIST = Arrays.asList(Constants.JCR_CONTENT);
+    private static final List<String> JCR_CONTENT_LIST = List.of(Constants.JCR_CONTENT);
     private static final Set<String> SUPPORTED_NODE_TYPES = new HashSet<>(Arrays.asList(Constants.JAHIANT_FILE, Constants.JAHIANT_FOLDER, Constants.JCR_CONTENT));
     private static final Logger LOGGER = LoggerFactory.getLogger(TomcatLogDataSource.class);
     private static final String JCR_CONTENT_SUFFIX = FileSystem.SEPARATOR + Constants.JCR_CONTENT;
@@ -45,6 +32,10 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     private FileObject root;
     private String rootPath;
     private FileSystemManager manager;
+
+    public static String getTomcatLogPath() {
+        return System.getProperty("catalina.base") + File.separator + "logs";
+    }
 
     public void setRoot() {
         final String tomcatLogPath = getTomcatLogPath();
@@ -119,11 +110,15 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
             String unescapedPath = JCRContentUtils.unescapeLocalNodeName(path);
             if (path.endsWith(JCR_CONTENT_SUFFIX)) {
                 FileObject fileObject = getFile(StringUtils.substringBeforeLast(unescapedPath, JCR_CONTENT_SUFFIX));
-                FileContent content = fileObject.getContent();
                 if (!fileObject.exists()) {
                     throw new PathNotFoundException(path);
                 }
-                return getFileContent(content);
+                if(fileObject.getType() == FileType.FOLDER) {
+                    return getFile(fileObject);
+                }else {
+                    FileContent content = fileObject.getContent();
+                    return getFileContent(content);
+                }
             } else {
                 FileObject fileObject = getFile(unescapedPath);
                 if (!fileObject.exists()) {
@@ -138,7 +133,10 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     }
 
     public FileObject getFile(String path) throws FileSystemException {
-        return FileSystem.SEPARATOR.equals(path) ? root : root.resolveFile(path.charAt(0) == FileSystem.SEPARATOR_CHAR ? path.substring(1) : path);
+        if (path == null || path.isEmpty() || FileSystem.SEPARATOR.equals(path)) {
+            return root;
+        }
+        return root.resolveFile(path.charAt(0) == FileSystem.SEPARATOR_CHAR ? path.substring(1) : path);
     }
 
     @Override
@@ -191,7 +189,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     @Override
     public List<ExternalData> getChildrenNodes(String path) throws RepositoryException {
         try {
-            if (!path.endsWith(JCR_CONTENT_SUFFIX)) {
+            if (!path.endsWith(JCR_CONTENT_SUFFIX) && !path.contains("j:translation")) {
                 final FileObject fileObject = getFile(path);
                 if (null == fileObject.getType()) {
                     if (fileObject.exists()) {
@@ -274,6 +272,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         final String type = getDataType(fileObject);
 
         final Map<String, String[]> properties = new HashMap<>();
+        final Map<String, Map<String, String[]>> i18nProperties = new HashMap<>();
         final List<String> addedMixins = new ArrayList<>();
         final FileContent content = fileObject.getContent();
         if (content != null) {
@@ -282,8 +281,13 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
                 final Calendar calendar = Calendar.getInstance();
                 calendar.setTimeInMillis(lastModifiedTime);
                 final String[] timestamp = new String[]{ISO8601.format(calendar)};
+                final String[] name = new String[]{fileObject.getName().getBaseName()};
                 properties.put(Constants.JCR_CREATED, timestamp);
+                properties.put(Constants.NODENAME, name);
                 properties.put(Constants.JCR_LASTMODIFIED, timestamp);
+                final Map<String, String[]> i18nProperty = new HashMap<>();
+                i18nProperty.put(Constants.JCR_TITLE,name);
+                i18nProperties.put("en", i18nProperty);
             }
             // Add jmix:image mixin in case of the file is a picture.
             if (content.getContentInfo() != null && content.getContentInfo().getContentType() != null
@@ -299,6 +303,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         }
 
         final ExternalData result = new ExternalData(path, path, type, properties);
+        result.setI18nProperties(i18nProperties);
         result.setMixin(addedMixins);
         return result;
     }
@@ -316,7 +321,6 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         final String path = JCRContentUtils.escapeNodePath(content.getFile().getName().getPath().substring(rootPath.length()));
         final String jcrContentPath = path + FileSystem.SEPARATOR + Constants.JCR_CONTENT;
         final ExternalData externalData = new ExternalData(jcrContentPath, jcrContentPath, Constants.JAHIANT_RESOURCE, properties);
-
         final Map<String, Binary[]> binaryProperties = new HashMap<>(1);
         binaryProperties.put(Constants.JCR_DATA, new Binary[]{new TomcatLogBinaryImpl(content)});
         externalData.setBinaryProperties(binaryProperties);
@@ -333,9 +337,5 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
             s1 = "application/octet-stream";
         }
         return s1;
-    }
-
-    public static String getTomcatLogPath() {
-        return System.getProperty("catalina.base") + File.separator + "logs";
     }
 }

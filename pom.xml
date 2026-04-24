@@ -1,67 +1,128 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.jahia.modules</groupId>
-    <artifactId>jahia-modules</artifactId>
-    <version>8.2.1.0</version>
-  </parent>
-  <artifactId>tomcat-log-provider</artifactId>
-  <version>2.0.2-SNAPSHOT</version>
-  <packaging>bundle</packaging>
-  <name>Tomcat Log Provider</name>
-  <description>Give access to the logs of the running Tomcat in read-only</description>
-  <scm>
-    <connection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</connection>
-    <developerConnection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</developerConnection>
-    <url>scm:git:git@github.com:Jahia/tomcat-log-provider.git</url>
-    <tag>HEAD</tag>
-  </scm>
-  <properties>
-    <export-package>org.jahia.modules.external.tomcat.log,org.jahia.modules.external.tomcat.log.factory</export-package>
-    <jahia-module-signature>MCwCFG+pZthHBbcrglMtvVJrzYCUX+4DAhQjyUxV+Xk11P2JnmJVNW/+dT4Q8A==</jahia-module-signature>
-    <jahia-module-type>system</jahia-module-type>
-    <jahia.plugin.version>6.10</jahia.plugin.version>
-    <require-capability>osgi.extender;filter:="(osgi.extender=org.jahia.bundles.blueprint.extender.config)"</require-capability>
-    <jahia-depends>external-provider,serverSettings,default</jahia-depends>
-  </properties>
-  <dependencies>
-    <dependency>
-      <groupId>org.jahia.modules</groupId>
-      <artifactId>external-provider</artifactId>
-      <version>4.0.0</version>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-  <repositories>
-    <repository>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-      </snapshots>
-      <id>jahia-public</id>
-      <name>Jahia Public Repository</name>
-      <url>https://devtools.jahia.com/nexus/content/groups/public</url>
-    </repository>
-  </repositories>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>2.3.2</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.felix</groupId>
-        <artifactId>maven-bundle-plugin</artifactId>
-        <extensions>true</extensions>
-      </plugin>
-    </plugins>
-  </build>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <artifactId>jahia-modules</artifactId>
+        <groupId>org.jahia.modules</groupId>
+        <version>8.2.1.0</version>
+    </parent>
+    <groupId>org.jahia.community</groupId>
+    <artifactId>tomcat-log-provider</artifactId>
+    <name>Tomcat Log Provider</name>
+    <version>2.0.2-SNAPSHOT</version>
+    <packaging>bundle</packaging>
+    <description>Provides read-only access to Tomcat logs via JCR mount points.</description>
+
+    <scm>
+        <connection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</connection>
+        <developerConnection>scm:git:git@github.com:Jahia/tomcat-log-provider.git</developerConnection>
+        <url>https://github.com/Jahia/tomcat-log-provider</url>
+        <tag>HEAD</tag>
+    </scm>
+
+    <properties>
+        <yarn.arguments>build:production</yarn.arguments>
+        <jahia-deploy-on-site>all</jahia-deploy-on-site>
+        <jahia-module-type>system</jahia-module-type>
+        <jahia-depends>default,external-provider,graphql-dxm-provider</jahia-depends>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.jahia.modules</groupId>
+            <artifactId>external-provider</artifactId>
+            <version>4.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java</groupId>
+            <artifactId>graphql-java</artifactId>
+            <version>${graphql-java.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.graphql-java-kickstart</groupId>
+            <artifactId>graphql-java-servlet</artifactId>
+            <version>${graphql-java-servlet.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.github.graphql-java</groupId>
+            <artifactId>graphql-java-annotations</artifactId>
+            <version>${graphql-java-annotations.version}</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jahia.modules</groupId>
+            <artifactId>graphql-dxm-provider</artifactId>
+            <version>3.4.0</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+    <repositories>
+        <repository>
+            <id>jahia-public</id>
+            <name>Jahia Public Repository</name>
+            <url>https://devtools.jahia.com/nexus/content/groups/public</url>
+            <releases>
+                <enabled>true</enabled>
+                <updatePolicy>never</updatePolicy>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.15.0</version>
+                <executions>
+                    <execution>
+                        <id>npm install node and yarn</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>install-node-and-yarn</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>v22.6.0</nodeVersion>
+                            <yarnVersion>v1.22.21</yarnVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>yarn post-install</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>${yarn.arguments}</arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.felix</groupId>
+                <artifactId>maven-bundle-plugin</artifactId>
+                <extensions>true</extensions>
+                <configuration>
+                    <instructions>
+                        <_dsannotations>org.jahia.modules.external.tomcat.log.*</_dsannotations>
+                    </instructions>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

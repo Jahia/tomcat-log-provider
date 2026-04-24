@@ -1,0 +1,14 @@
+{
+  "label": {
+    "menu_entry": "Tomcat Log Provider",
+    "title": "Tomcat Log Provider",
+    "description": "Configure the JCR mount point that exposes Tomcat log files in the document manager.",
+    "logPath": "Tomcat log directory",
+    "logPathHint": "Read-only — resolved from ${catalina.base}/logs at runtime",
+    "mountPath": "JCR mount path",
+    "mountPathHint": "JCR path where the log files will be accessible (e.g. /sites/systemsite/files/tomcat-logs). Changing this value remounts the provider.",
+    "save": "Save settings",
+    "saveSuccess": "Settings saved. The provider will remount at the new path.",
+    "saveError": "An error occurred while saving the settings."
+  }
+}
