@@ -1,6 +1,8 @@
 {
   "label": {
-    "menu_entry": "Tomcat Log Provider",
+    "conf_menu_entry": "Configuration",
+    "main_menu_entry": "Tomcat Log Provider",
+    "logViewer_menu_entry": "Live log viewer",
     "title": "Tomcat Log Provider",
     "description": "Configure the JCR mount point that exposes Tomcat log files in the document manager.",
     "logPath": "Tomcat log directory",
@@ -9,6 +11,8 @@
     "mountPathHint": "JCR path where the log files will be accessible (e.g. /sites/systemsite/files/tomcat-logs). Changing this value remounts the provider.",
     "save": "Save settings",
     "saveSuccess": "Settings saved. The provider will remount at the new path.",
-    "saveError": "An error occurred while saving the settings."
+    "saveError": "An error occurred while saving the settings.",
+    "logViewer": "Live tail — jahia.log",
+    "logViewerPaused": "Auto-scroll paused — scroll to bottom to resume"
   }
 }

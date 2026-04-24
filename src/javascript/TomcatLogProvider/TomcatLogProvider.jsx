@@ -46,56 +46,58 @@ export const TomcatLogProviderAdmin = () => {
 
     return (
         <div className={styles.tlp_container}>
-            <div className={styles.tlp_header}>
-                <h2>{t('label.title')}</h2>
-            </div>
-
-            <div className={styles.tlp_description}>
-                <Typography>{t('label.description')}</Typography>
-            </div>
-
-            <div className={styles.tlp_form}>
-                <div className={styles.tlp_fieldGroup}>
-                    <label className={styles.tlp_label}>{t('label.logPath')}</label>
-                    <span className={styles.tlp_readOnly}>{logPath}</span>
-                    <span className={styles.tlp_hint}>{t('label.logPathHint')}</span>
+            <div className={styles.tlp_formSection}>
+                <div className={styles.tlp_header}>
+                    <h2>{t('label.title')}</h2>
                 </div>
 
-                <div className={styles.tlp_fieldGroup}>
-                    <label className={styles.tlp_label} htmlFor="tlp-mount-path">
-                        {t('label.mountPath')}
-                    </label>
-                    <input
-                        type="text"
-                        id="tlp-mount-path"
-                        className={styles.tlp_input}
-                        value={mountPath}
-                        onChange={e => {
-                            setMountPath(e.target.value);
-                            setSaveStatus(null);
-                        }}
+                <div className={styles.tlp_description}>
+                    <Typography>{t('label.description')}</Typography>
+                </div>
+
+                <div className={styles.tlp_form}>
+                    <div className={styles.tlp_fieldGroup}>
+                        <label className={styles.tlp_label}>{t('label.logPath')}</label>
+                        <span className={styles.tlp_readOnly}>{logPath}</span>
+                        <span className={styles.tlp_hint}>{t('label.logPathHint')}</span>
+                    </div>
+
+                    <div className={styles.tlp_fieldGroup}>
+                        <label className={styles.tlp_label} htmlFor="tlp-mount-path">
+                            {t('label.mountPath')}
+                        </label>
+                        <input
+                            type="text"
+                            id="tlp-mount-path"
+                            className={styles.tlp_input}
+                            value={mountPath}
+                            onChange={e => {
+                                setMountPath(e.target.value);
+                                setSaveStatus(null);
+                            }}
+                        />
+                        <span className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
+                    </div>
+                </div>
+
+                <div className={styles.tlp_actions}>
+                    {saveStatus === 'success' && (
+                        <div className={`${styles.tlp_alert} ${styles['tlp_alert--success']}`}>
+                            {t('label.saveSuccess')}
+                        </div>
+                    )}
+                    {saveStatus === 'error' && (
+                        <div className={`${styles.tlp_alert} ${styles['tlp_alert--error']}`}>
+                            {t('label.saveError')}
+                        </div>
+                    )}
+                    <Button
+                        label={t('label.save')}
+                        variant="primary"
+                        isDisabled={saving || !mountPath.trim()}
+                        onClick={handleSave}
                     />
-                    <span className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
                 </div>
-            </div>
-
-            <div className={styles.tlp_actions}>
-                {saveStatus === 'success' && (
-                    <div className={`${styles.tlp_alert} ${styles['tlp_alert--success']}`}>
-                        {t('label.saveSuccess')}
-                    </div>
-                )}
-                {saveStatus === 'error' && (
-                    <div className={`${styles.tlp_alert} ${styles['tlp_alert--error']}`}>
-                        {t('label.saveError')}
-                    </div>
-                )}
-                <Button
-                    label={t('label.save')}
-                    variant="primary"
-                    isDisabled={saving || !mountPath.trim()}
-                    onClick={handleSave}
-                />
             </div>
         </div>
     );

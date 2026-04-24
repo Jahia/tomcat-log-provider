@@ -14,3 +14,9 @@ export const SAVE_SETTINGS = gql`
         tomcatLogSaveSettings(mountPath: $mountPath)
     }
 `;
+
+export const GET_LOG_TAIL = gql`
+    query {
+        tomcatLogTail(lines: 200)
+    }
+`;

@@ -7,7 +7,11 @@
 
 .tlp_container {
     padding: 24px 32px;
-    max-width: 700px;
+    max-width: 90%;
+}
+
+.tlp_formSection {
+    max-width: 90%;
 }
 
 .tlp_header {
@@ -45,7 +49,7 @@
 }
 
 .tlp_input {
-    width: 420px;
+    width: 90%;
     padding: 6px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -65,7 +69,7 @@
     border: 1px solid #e0e0e0;
     border-radius: 4px;
     padding: 6px 10px;
-    width: 420px;
+    width: 90%;
     box-sizing: border-box;
     display: block;
 }
@@ -101,4 +105,41 @@
         border: 1px solid #ef9a9a;
         color: #c62828;
     }
+}
+
+.tlp_logHeader {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.tlp_logPaused {
+    font-size: 11px;
+    color: #888;
+    font-style: italic;
+}
+
+.tlp_logTerminal {
+    background: #1e1e1e;
+    color: #d4d4d4;
+    font-family: monospace;
+    font-size: 12px;
+    line-height: 1.5;
+    padding: 12px 16px;
+    border-radius: 4px;
+    width: 90%;
+    height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+    box-sizing: border-box;
+}
+
+.tlp_logLine {
+    white-space: pre;
+    min-height: 1em;
+}
+
+.tlp_logTerminal--fullPage {
+    height: calc(100vh - 160px);
 }
