@@ -1,0 +1,6 @@
+query getSettings {
+    tomcatLogSettings {
+        mountPath
+        logPath
+    }
+}

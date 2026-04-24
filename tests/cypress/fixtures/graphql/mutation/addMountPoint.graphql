@@ -1,0 +1,3 @@
+mutation saveSettings($mountPath: String!) {
+    tomcatLogSaveSettings(mountPath: $mountPath)
+}

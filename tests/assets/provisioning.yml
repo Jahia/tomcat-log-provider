@@ -1,0 +1,9 @@
+- karafCommand: "log:log 'START - provisioning tomcat-log-provider'"
+
+- karafCommand: "log:log 'Install tomcat-log-provider dependencies'"
+- installBundle:
+      - 'mvn:org.jahia.modules/graphql-dxm-provider/LATEST'
+  autoStart: true
+  uninstallPreviousVersion: false
+
+- karafCommand: "log:log 'END - provisioning tomcat-log-provider'"
