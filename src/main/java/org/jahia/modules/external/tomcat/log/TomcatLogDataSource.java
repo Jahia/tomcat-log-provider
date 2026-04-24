@@ -136,102 +136,85 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     @Override
     public List<String> getChildren(String path) throws RepositoryException {
+        if (path.endsWith(JCR_CONTENT_SUFFIX)) {
+            return Collections.emptyList();
+        }
         try {
-            if (!path.endsWith(JCR_CONTENT_SUFFIX)) {
-                final FileObject fileObject = getFile(path);
-                if (null == fileObject.getType()) {
-                    if (fileObject.exists()) {
-                        LOGGER.warn(UNKNOWN_FILE_TYPE,
-                                fileObject, fileObject.getType());
-                    } else {
-                        throw new PathNotFoundException(path);
-                    }
-                } else {
-                    switch (fileObject.getType()) {
-                        case FILE:
-                            return new ArrayList<>(JCR_CONTENT_LIST);
-                        case FOLDER:
-                            final FileObject[] files = fileObject.getChildren();
-                            if (files.length > 0) {
-                                final List<String> children = new LinkedList<>();
-                                for (FileObject object : files) {
-                                    if (getSupportedNodeTypes().contains(getDataType(object))) {
-                                        children.add(JCRContentUtils.escapeLocalNodeName(object.getName().getBaseName()));
-                                    }
-                                }
-                                return children;
-                            } else {
-                                return Collections.emptyList();
-                            }
-                        default:
-                            if (fileObject.exists()) {
-                                LOGGER.warn(UNKNOWN_FILE_TYPE,
-                                        fileObject, fileObject.getType());
-                            } else {
-                                throw new PathNotFoundException(path);
-                            }
-                            break;
-                    }
-                }
-            }
+            return getChildNames(getFile(path), path);
         } catch (FileSystemException e) {
             LOGGER.error("Cannot get node children", e);
         }
-
         return Collections.emptyList();
+    }
+
+    private List<String> getChildNames(FileObject fileObject, String path) throws FileSystemException, PathNotFoundException {
+        final FileType type = fileObject.getType();
+        if (type == FileType.FILE) {
+            return new ArrayList<>(JCR_CONTENT_LIST);
+        }
+        if (type == FileType.FOLDER) {
+            return listFolderChildNames(fileObject);
+        }
+        warnOrThrowNotFound(fileObject, path);
+        return Collections.emptyList();
+    }
+
+    private List<String> listFolderChildNames(FileObject fileObject) throws FileSystemException {
+        final List<String> children = new LinkedList<>();
+        for (FileObject object : fileObject.getChildren()) {
+            if (getSupportedNodeTypes().contains(getDataType(object))) {
+                children.add(JCRContentUtils.escapeLocalNodeName(object.getName().getBaseName()));
+            }
+        }
+        return children;
     }
 
     @Override
     public List<ExternalData> getChildrenNodes(String path) throws RepositoryException {
+        if (path.endsWith(JCR_CONTENT_SUFFIX) || path.contains("j:translation")) {
+            return Collections.emptyList();
+        }
         try {
-            if (!path.endsWith(JCR_CONTENT_SUFFIX) && !path.contains("j:translation")) {
-                final FileObject fileObject = getFile(path);
-                if (null == fileObject.getType()) {
-                    if (fileObject.exists()) {
-                        LOGGER.warn(UNKNOWN_FILE_TYPE,
-                                fileObject, fileObject.getType());
-                    } else {
-                        throw new PathNotFoundException(path);
-                    }
-                } else {
-                    switch (fileObject.getType()) {
-                        case FILE:
-                            final FileContent content = fileObject.getContent();
-                            return Collections.singletonList(getFileContent(content));
-                        case FOLDER:
-                            //in case of folder, refresh because it could be changed external
-                            fileObject.refresh();
-                            final FileObject[] files = fileObject.getChildren();
-                            if (files.length > 0) {
-                                final List<ExternalData> children = new LinkedList<>();
-                                for (FileObject object : files) {
-                                    if (getSupportedNodeTypes().contains(getDataType(object))) {
-                                        children.add(getFile(object));
-                                        if (object.getType() == FileType.FILE) {
-                                            children.add(getFileContent(object.getContent()));
-                                        }
-                                    }
-                                }
-                                return children;
-                            } else {
-                                return Collections.emptyList();
-                            }
-                        default:
-                            if (fileObject.exists()) {
-                                LOGGER.warn(UNKNOWN_FILE_TYPE,
-                                        fileObject, fileObject.getType());
-                            } else {
-                                throw new PathNotFoundException(path);
-                            }
-                            break;
-                    }
-                }
-            }
+            return getChildExternalData(getFile(path), path);
         } catch (FileSystemException e) {
             LOGGER.error("Cannot get node children", e);
         }
-
         return Collections.emptyList();
+    }
+
+    private List<ExternalData> getChildExternalData(FileObject fileObject, String path) throws FileSystemException, PathNotFoundException {
+        final FileType type = fileObject.getType();
+        if (type == FileType.FILE) {
+            return Collections.singletonList(getFileContent(fileObject.getContent()));
+        }
+        if (type == FileType.FOLDER) {
+            return listFolderChildren(fileObject);
+        }
+        warnOrThrowNotFound(fileObject, path);
+        return Collections.emptyList();
+    }
+
+    private List<ExternalData> listFolderChildren(FileObject fileObject) throws FileSystemException {
+        // Refresh so external changes to the directory are picked up
+        fileObject.refresh();
+        final List<ExternalData> children = new LinkedList<>();
+        for (FileObject object : fileObject.getChildren()) {
+            if (getSupportedNodeTypes().contains(getDataType(object))) {
+                children.add(getFile(object));
+                if (object.getType() == FileType.FILE) {
+                    children.add(getFileContent(object.getContent()));
+                }
+            }
+        }
+        return children;
+    }
+
+    private void warnOrThrowNotFound(FileObject fileObject, String path) throws FileSystemException, PathNotFoundException {
+        if (fileObject.exists()) {
+            LOGGER.warn(UNKNOWN_FILE_TYPE, fileObject, fileObject.getType());
+        } else {
+            throw new PathNotFoundException(path);
+        }
     }
 
     @Override

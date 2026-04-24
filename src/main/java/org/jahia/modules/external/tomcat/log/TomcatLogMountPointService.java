@@ -34,6 +34,7 @@ public class TomcatLogMountPointService implements ManagedService {
     private static final List<String> OVERRIDABLE_ITEMS = Collections.singletonList("*.*");
     private static final String PROVIDER_KEY = "tomcat-logs";
 
+    @SuppressWarnings("java:S1075")
     public static final String DEFAULT_MOUNT_PATH = "/sites/systemsite/files/tomcat-logs";
 
     private volatile String mountPath = DEFAULT_MOUNT_PATH;
