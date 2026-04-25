@@ -10,6 +10,7 @@
     "mountPath": "JCR mount path",
     "mountPathHint": "JCR path where the log files will be accessible (e.g. /sites/systemsite/files/tomcat-logs). Changing this value remounts the provider.",
     "save": "Save settings",
+    "browseInJContent": "Browse in jContent",
     "saveSuccess": "Settings saved. The provider will remount at the new path.",
     "saveError": "An error occurred while saving the settings.",
     "logViewer": "Live tail — jahia.log",

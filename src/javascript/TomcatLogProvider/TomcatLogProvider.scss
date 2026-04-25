@@ -87,6 +87,13 @@
     align-items: flex-start;
 }
 
+.tlp_buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    align-items: center;
+}
+
 .tlp_alert {
     padding: 10px 14px;
     border-radius: 4px;

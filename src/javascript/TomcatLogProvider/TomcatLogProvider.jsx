@@ -5,6 +5,17 @@ import {Button, Loader, Typography} from '@jahia/moonstone';
 import styles from './TomcatLogProvider.scss';
 import {GET_SETTINGS, SAVE_SETTINGS} from './TomcatLogProvider.gql';
 
+const buildJContentUrl = jcrPath => {
+    const match = jcrPath.match(/^\/sites\/([^/]+)\/files(\/.*)?$/);
+    if (!match) {
+        return null;
+    }
+
+    const siteKey = match[1];
+    const rest = match[2] ?? '';
+    return `/jahia/jcontent/${siteKey}/en/media/files${rest}`;
+};
+
 export const TomcatLogProviderAdmin = () => {
     const {t} = useTranslation('tomcat-log-provider');
     const [saveStatus, setSaveStatus] = useState(null);
@@ -22,6 +33,7 @@ export const TomcatLogProviderAdmin = () => {
 
     const {data} = useQuery(GET_SETTINGS, {fetchPolicy: 'cache-first'});
     const logPath = data?.tomcatLogSettings?.logPath ?? '';
+    const jContentUrl = buildJContentUrl(mountPath);
 
     const [saveSettings, {loading: saving}] = useMutation(SAVE_SETTINGS);
 
@@ -75,6 +87,11 @@ export const TomcatLogProviderAdmin = () => {
                                 setMountPath(e.target.value);
                                 setSaveStatus(null);
                             }}
+                            onKeyDown={e => {
+                                if (e.key === 'Enter' && e.ctrlKey && mountPath.trim()) {
+                                    handleSave();
+                                }
+                            }}
                         />
                         <span className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
                     </div>
@@ -91,12 +108,20 @@ export const TomcatLogProviderAdmin = () => {
                             {t('label.saveError')}
                         </div>
                     )}
-                    <Button
-                        label={t('label.save')}
-                        variant="primary"
-                        isDisabled={saving || !mountPath.trim()}
-                        onClick={handleSave}
-                    />
+                    <div className={styles.tlp_buttons}>
+                        <Button
+                            label={t('label.save')}
+                            variant="primary"
+                            isDisabled={saving || !mountPath.trim()}
+                            onClick={handleSave}
+                        />
+                        <Button
+                            label={t('label.browseInJContent')}
+                            variant="secondary"
+                            isDisabled={!jContentUrl}
+                            onClick={() => window.open(jContentUrl, '_blank')}
+                        />
+                    </div>
                 </div>
             </div>
         </div>
