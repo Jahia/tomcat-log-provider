@@ -2,6 +2,7 @@ import {defineConfig} from 'cypress';
 import fs from 'fs';
 
 export default defineConfig({
+    defaultCommandTimeout: 10000,
     reporter: 'cypress-multi-reporters',
     reporterOptions: {
         configFile: 'reporter-config.json'

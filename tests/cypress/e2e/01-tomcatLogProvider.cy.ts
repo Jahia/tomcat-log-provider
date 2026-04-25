@@ -1,7 +1,8 @@
 import {DocumentNode} from 'graphql';
 
 describe('Tomcat Log Provider', () => {
-    const adminPath = '/jahia/administration/tomcatLogProvider';
+    const configPath = '/jahia/administration/tomcatLogProvider';
+    const logViewerPath = '/jahia/administration/tomcatLogViewer';
     const defaultMountPath = '/sites/systemsite/files/tomcat-logs';
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
@@ -73,6 +74,7 @@ describe('Tomcat Log Provider', () => {
         const logFilePath = `${defaultMountPath}/jahia.log`;
 
         before(() => {
+            cy.login();
             cy.apollo({
                 mutation: saveSettings,
                 variables: {mountPath: defaultMountPath}
@@ -80,6 +82,7 @@ describe('Tomcat Log Provider', () => {
         });
 
         it('jahia.log exists as a jnt:file node under the mount point', () => {
+            cy.login();
             cy.apollo({query: getLogFile, variables: {path: logFilePath}})
                 .its('data.jcr.nodeByPath')
                 .should(node => {
@@ -89,46 +92,70 @@ describe('Tomcat Log Provider', () => {
         });
 
         it('jahia.log jcr:content has a text MIME type', () => {
+            cy.login();
             cy.apollo({query: getLogFile, variables: {path: logFilePath}})
                 .its('data.jcr.nodeByPath.descendant.property.value')
                 .should('match', /^text\//);
         });
 
         it('jahia.log content is not empty', () => {
+            cy.login();
             cy.request(`/files/default${logFilePath}`)
                 .its('body')
                 .should('not.be.empty');
         });
     });
 
-    // ─── Admin UI ────────────────────────────────────────────────────────────────
+    // ─── Admin UI — Configuration ─────────────────────────────────────────────────
 
-    describe('Admin UI', () => {
+    describe('Admin UI — Configuration', () => {
         it('shows the admin panel title', () => {
             cy.login();
-            cy.visit(adminPath);
+            cy.visit(configPath);
             cy.contains('Tomcat Log Provider').should('be.visible');
         });
 
         it('shows the mount path input field', () => {
             cy.login();
-            cy.visit(adminPath);
+            cy.visit(configPath);
             cy.get('#tlp-mount-path').should('be.visible');
         });
 
         it('shows the save button', () => {
             cy.login();
-            cy.visit(adminPath);
+            cy.visit(configPath);
             cy.contains('button', 'Save settings').should('be.visible');
         });
 
         it('shows success alert after saving', () => {
             cy.login();
-            cy.visit(adminPath);
+            cy.visit(configPath);
             cy.get('#tlp-mount-path').clear();
             cy.get('#tlp-mount-path').type('/sites/systemsite/files/tomcat-logs-ui-test');
             cy.contains('button', 'Save settings').click();
             cy.get('[class*="tlp_alert--success"]').should('be.visible');
+        });
+    });
+
+    // ─── Admin UI — Log Viewer ────────────────────────────────────────────────────
+
+    describe('Admin UI — Log Viewer', () => {
+        it('shows the live tail label', () => {
+            cy.login();
+            cy.visit(logViewerPath);
+            cy.contains('Live tail — jahia.log', {timeout: 10000}).should('be.visible');
+        });
+
+        it('shows the log terminal', () => {
+            cy.login();
+            cy.visit(logViewerPath);
+            cy.get('[class*="tlp_logTerminal"]', {timeout: 10000}).should('be.visible');
+        });
+
+        it('displays log lines in the terminal', () => {
+            cy.login();
+            cy.visit(logViewerPath);
+            cy.get('[class*="tlp_logLine"]', {timeout: 10000}).should('have.length.greaterThan', 0);
         });
     });
 });
