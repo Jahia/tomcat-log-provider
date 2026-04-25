@@ -1,16 +1,92 @@
 # Tomcat Log Provider
-This community module (not supported by Jahia) is meant to give access to the Tomcat logs in read-only for debug purposes.
 
-### MINIMAL REQUIREMENTS
-* DX 7.3.1.0
+A Jahia community module (not officially supported by Jahia) that mounts the Tomcat log directory into the JCR content tree, making log files accessible in read-only mode through the document manager.
 
-### INSTALLATION
-- Download the jar and deploy it on your instance
-- Go to Administrat -> Server settings -> System components -> Mount points
-- Add a new mount point of the type **Tomcat log mount point**
-  - Give a name to the mount point
-  - Specify where to mount it
+## Requirements
 
-### HOW TO USE
- -  Open the document manager and go the mount point
- - **Note: ** for security reasons, do not forget to filter the access to this mount point thanks to the Jahia permissions
+- Jahia 8.2.1 or later
+- `external-provider` module
+- `graphql-dxm-provider` module
+
+## Installation
+
+1. In Jahia, go to **Administration → Server settings → System components → Modules**
+2. Upload the JAR **tomcat-log-provider-X.X.X.jar**
+3. Verify the module status is **Started**
+
+The provider mounts automatically at the default JCR path `/sites/systemsite/files/tomcat-logs`.
+
+## Configuration
+
+The module reads its settings from the OSGi configuration file:
+
+```
+$JAHIA_DATA_DIR/karaf/etc/org.jahia.modules.tomcatlogprovider.cfg
+```
+
+| Property    | Default                               | Description                                             |
+|-------------|---------------------------------------|---------------------------------------------------------|
+| `mountPath` | `/sites/systemsite/files/tomcat-logs` | JCR path where the Tomcat log directory will be mounted |
+
+Changes to the configuration file are applied immediately — the provider remounts at the new path without a restart.
+
+### Admin UI
+
+Settings can also be edited in the Jahia administration panel:
+
+**Administration → Tomcat Log Provider → Configuration**
+
+The panel shows:
+- The resolved Tomcat log directory path on disk (`${catalina.base}/logs`) — read-only
+- The JCR mount path — editable, saved via the **Save settings** button
+
+## GraphQL API
+
+The module exposes two queries and one mutation under the `graphql-dxm-provider` extension point.
+
+### Queries
+
+```graphql
+# Returns current settings
+query {
+    tomcatLogSettings {
+        mountPath   # current JCR mount path
+        logPath     # resolved on-disk log directory
+    }
+}
+
+# Returns the last N lines of jahia.log (default: 200)
+query {
+    tomcatLogTail(lines: 200)
+}
+```
+
+### Mutation
+
+```graphql
+# Saves the mount path and triggers a remount; returns true on success
+mutation {
+    tomcatLogSaveSettings(mountPath: "/sites/systemsite/files/tomcat-logs")
+}
+```
+
+All operations require the `admin` permission.
+
+## Live log viewer
+
+A dedicated administration page streams the last 200 lines of `jahia.log` in real time, refreshing every 2 seconds:
+
+**Administration → Tomcat Log Provider → Live log viewer**
+
+The terminal auto-scrolls to the latest entries. Scrolling up pauses auto-scroll; scrolling back to the bottom resumes it.
+
+## How it works
+
+- The module registers an `ExternalContentStoreProvider` backed by Apache Commons VFS2, pointing at `${catalina.base}/logs`
+- Log files appear as `jnt:file` nodes and subdirectories as `jnt:folder` nodes under the configured mount path
+- All write operations are rejected — the provider is strictly read-only
+- Access is restricted to users who are members of the `systemsite` administrators group
+
+## Security
+
+> **Note:** the mount path is accessible through the Jahia document manager. Restrict access to the mount point using Jahia's built-in ACL system to prevent non-admin users from browsing server log files.
