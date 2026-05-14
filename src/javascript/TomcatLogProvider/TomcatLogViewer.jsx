@@ -10,6 +10,10 @@ export const TomcatLogViewer = () => {
     const logContainerRef = useRef(null);
     const [autoScroll, setAutoScroll] = useState(true);
 
+    useEffect(() => {
+        document.title = `${t('label.logViewer')} — Jahia Administration`;
+    }, [t]);
+
     const {data: tailData} = useQuery(GET_LOG_TAIL, {
         fetchPolicy: 'network-only',
         pollInterval: 2000
@@ -35,11 +39,17 @@ export const TomcatLogViewer = () => {
             <div className={styles.tlp_logHeader}>
                 <span className={styles.tlp_label}>{t('label.logViewer')}</span>
                 {!autoScroll && (
-                    <span className={styles.tlp_logPaused}>{t('label.logViewerPaused')}</span>
+                    <span aria-live="polite" className={styles.tlp_logPaused}>{t('label.logViewerPaused')}</span>
                 )}
             </div>
+            {/* role="log" with aria-live="off" — AT should not announce every new log line;
+                tabIndex=0 makes the scrollable region keyboard-reachable (SC 2.1.1) */}
             <div
                 ref={logContainerRef}
+                role="log"
+                aria-label={t('label.logViewer')}
+                aria-live="off"
+                tabIndex={0}
                 className={`${styles.tlp_logTerminal} ${styles['tlp_logTerminal--fullPage']}`}
                 onScroll={handleLogScroll}
             >

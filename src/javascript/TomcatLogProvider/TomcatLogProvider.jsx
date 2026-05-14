@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {useTranslation} from 'react-i18next';
 import {Button, Loader, Typography} from '@jahia/moonstone';
@@ -20,6 +20,11 @@ export const TomcatLogProviderAdmin = () => {
     const {t} = useTranslation('tomcat-log-provider');
     const [saveStatus, setSaveStatus] = useState(null);
     const [mountPath, setMountPath] = useState('');
+    const saveLiveRef = useRef(null);
+
+    useEffect(() => {
+        document.title = `${t('label.title')} — Jahia Administration`;
+    }, [t]);
 
     const {loading} = useQuery(GET_SETTINGS, {
         fetchPolicy: 'network-only',
@@ -46,11 +51,17 @@ export const TomcatLogProviderAdmin = () => {
             console.error('Failed to save settings:', err);
             setSaveStatus('error');
         }
+
+        setTimeout(() => saveLiveRef.current?.focus(), 50);
     };
+
+    const saveLiveMsg = saveStatus === 'success' ? t('label.saveSuccess') :
+        saveStatus === 'error' ? t('label.saveError') : '';
 
     if (loading) {
         return (
-            <div className={styles.tlp_loading}>
+            <div className={styles.tlp_loading} role="status">
+                <span className={styles.tlp_sr_only}>{t('label.loading')}</span>
                 <Loader size="big"/>
             </div>
         );
@@ -58,6 +69,18 @@ export const TomcatLogProviderAdmin = () => {
 
     return (
         <div className={styles.tlp_container}>
+            {/* Persistent live region — always in DOM so AT registers it before status changes */}
+            <div
+                ref={saveLiveRef}
+                tabIndex={-1}
+                role={saveStatus === 'error' ? 'alert' : 'status'}
+                aria-live={saveStatus === 'error' ? 'assertive' : 'polite'}
+                aria-atomic="true"
+                className={styles.tlp_sr_only}
+            >
+                {saveLiveMsg}
+            </div>
+
             <div className={styles.tlp_formSection}>
                 <div className={styles.tlp_header}>
                     <h2>{t('label.title')}</h2>
@@ -68,11 +91,12 @@ export const TomcatLogProviderAdmin = () => {
                 </div>
 
                 <div className={styles.tlp_form}>
-                    <div className={styles.tlp_fieldGroup}>
-                        <label className={styles.tlp_label}>{t('label.logPath')}</label>
-                        <span className={styles.tlp_readOnly}>{logPath}</span>
-                        <span className={styles.tlp_hint}>{t('label.logPathHint')}</span>
-                    </div>
+                    {/* Read-only field: use dl/dt/dd for label/value association without htmlFor */}
+                    <dl className={styles.tlp_fieldGroup}>
+                        <dt className={styles.tlp_label}>{t('label.logPath')}</dt>
+                        <dd className={styles.tlp_readOnly}>{logPath}</dd>
+                        <dd className={styles.tlp_hint}>{t('label.logPathHint')}</dd>
+                    </dl>
 
                     <div className={styles.tlp_fieldGroup}>
                         <label className={styles.tlp_label} htmlFor="tlp-mount-path">
@@ -83,6 +107,7 @@ export const TomcatLogProviderAdmin = () => {
                             id="tlp-mount-path"
                             className={styles.tlp_input}
                             value={mountPath}
+                            aria-describedby="tlp-mount-hint"
                             onChange={e => {
                                 setMountPath(e.target.value);
                                 setSaveStatus(null);
@@ -93,19 +118,19 @@ export const TomcatLogProviderAdmin = () => {
                                 }
                             }}
                         />
-                        <span className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
+                        <span id="tlp-mount-hint" className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
                     </div>
                 </div>
 
                 <div className={styles.tlp_actions}>
                     {saveStatus === 'success' && (
-                        <div className={`${styles.tlp_alert} ${styles['tlp_alert--success']}`}>
-                            {t('label.saveSuccess')}
+                        <div aria-hidden="true" className={`${styles.tlp_alert} ${styles['tlp_alert--success']}`}>
+                            <span className={styles.tlp_alertIcon}>✓</span> {t('label.saveSuccess')}
                         </div>
                     )}
                     {saveStatus === 'error' && (
-                        <div className={`${styles.tlp_alert} ${styles['tlp_alert--error']}`}>
-                            {t('label.saveError')}
+                        <div aria-hidden="true" className={`${styles.tlp_alert} ${styles['tlp_alert--error']}`}>
+                            <span className={styles.tlp_alertIcon}>✕</span> {t('label.saveError')}
                         </div>
                     )}
                     <div className={styles.tlp_buttons}>
@@ -121,6 +146,7 @@ export const TomcatLogProviderAdmin = () => {
                             isDisabled={!jContentUrl}
                             onClick={() => window.open(jContentUrl, '_blank')}
                         />
+                        <span className={styles.tlp_sr_only}>{t('label.opensInNewTab')}</span>
                     </div>
                 </div>
             </div>
