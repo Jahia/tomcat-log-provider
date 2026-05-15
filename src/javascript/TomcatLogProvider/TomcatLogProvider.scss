@@ -61,18 +61,19 @@
     font-size: 0.875rem;
     font-weight: 500;
     color: #333;
+    margin: 0;
 }
 
 .tlp_input {
     width: 90%;
     padding: 6px 10px;
-    /* #767676 on white = 4.54:1 — replaces #ccc which was ~1.6:1 (fails SC 1.4.11) */
+    /* #767676 on white = 4.54:1 — SC 1.4.11 */
     border: 1px solid #767676;
     border-radius: 4px;
     font-size: 0.875rem;
 
-    &:focus {
-        /* 2px outline replaces outline:none — SC 2.4.7 Focus Visible */
+    &:focus-visible {
+        /* 2px outline — SC 2.4.7 Focus Visible */
         outline: 2px solid #0077cc;
         outline-offset: 2px;
         border-color: #0077cc;
@@ -84,7 +85,8 @@
     font-size: 0.8125rem;
     color: #555;
     background: #f5f5f5;
-    border: 1px solid #e0e0e0;
+    /* #767676 on white = 4.54:1 — SC 1.4.11 */
+    border: 1px solid #767676;
     border-radius: 4px;
     padding: 6px 10px;
     width: 90%;
@@ -96,7 +98,7 @@
 
 .tlp_hint {
     font-size: 0.75rem;
-    /* #5c6370 on white ≈ 5.5:1 — replaces #888 which was 3.54:1 (fails at 12px) */
+    /* #5c6370 on white ≈ 5.5:1 — SC 1.4.3 */
     color: #5c6370;
     font-style: italic;
     /* Reset dd default margin */
@@ -153,9 +155,9 @@
 }
 
 .tlp_logPaused {
-    font-size: 0.6875rem;
-    /* #767676 on white = 4.54:1 — replaces #888 which was 3.54:1 (fails at 11px) */
-    color: #767676;
+    font-size: 0.75rem;
+    /* #595959 on white ≈ 7.0:1 — SC 1.4.3 */
+    color: #595959;
     font-style: italic;
 }
 
@@ -174,7 +176,7 @@
     overflow-x: auto;
     box-sizing: border-box;
 
-    &:focus {
+    &:focus-visible {
         outline: 2px solid #0077cc;
         outline-offset: 2px;
     }

@@ -9,7 +9,7 @@
     "logPath": "Tomcat log directory",
     "logPathHint": "Read-only — resolved from ${catalina.base}/logs at runtime",
     "mountPath": "JCR mount path",
-    "mountPathHint": "JCR path where the log files will be accessible (e.g. /sites/systemsite/files/tomcat-logs). Changing this value remounts the provider.",
+    "mountPathHint": "JCR path where the log files will be accessible (e.g. /sites/systemsite/files/tomcat-logs). Changing this value remounts the provider. Keyboard shortcut: Ctrl+Enter to save.",
     "save": "Save settings",
     "browseInJContent": "Browse in jContent",
     "opensInNewTab": "(opens in new tab)",

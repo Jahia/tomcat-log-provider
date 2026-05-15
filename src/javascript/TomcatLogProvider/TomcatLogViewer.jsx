@@ -36,19 +36,20 @@ export const TomcatLogViewer = () => {
 
     return (
         <div className={styles.tlp_container}>
+            {/* Always-in-DOM sr-only live region — AT must register it before content changes fire */}
+            <span role="status" aria-live="polite" className={styles.tlp_sr_only}>{!autoScroll ? t('label.logViewerPaused') : ''}</span>
             <div className={styles.tlp_logHeader}>
-                <span className={styles.tlp_label}>{t('label.logViewer')}</span>
+                <h2 className={styles.tlp_label}>{t('label.logViewer')}</h2>
                 {!autoScroll && (
-                    <span aria-live="polite" className={styles.tlp_logPaused}>{t('label.logViewerPaused')}</span>
+                    <span aria-hidden="true" className={styles.tlp_logPaused}>{t('label.logViewerPaused')}</span>
                 )}
             </div>
-            {/* role="log" with aria-live="off" — AT should not announce every new log line;
-                tabIndex=0 makes the scrollable region keyboard-reachable (SC 2.1.1) */}
+            {/* role="region" — avoids VoiceOver/Safari overriding aria-live="off" on role="log",
+                which caused every new log line to be announced (MAJ-04) */}
             <div
                 ref={logContainerRef}
-                role="log"
+                role="region"
                 aria-label={t('label.logViewer')}
-                aria-live="off"
                 tabIndex={0}
                 className={`${styles.tlp_logTerminal} ${styles['tlp_logTerminal--fullPage']}`}
                 onScroll={handleLogScroll}
@@ -57,7 +58,7 @@ export const TomcatLogViewer = () => {
                     // eslint-disable-next-line react/no-array-index-key
                     <div key={i} className={styles.tlp_logLine}>{line}</div>
                 ))}
-                <div ref={logEndRef}/>
+                <div ref={logEndRef} aria-hidden="true"/>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useMutation, useQuery} from '@apollo/client';
 import {useTranslation} from 'react-i18next';
 import {Button, Loader, Typography} from '@jahia/moonstone';
@@ -20,7 +20,6 @@ export const TomcatLogProviderAdmin = () => {
     const {t} = useTranslation('tomcat-log-provider');
     const [saveStatus, setSaveStatus] = useState(null);
     const [mountPath, setMountPath] = useState('');
-    const saveLiveRef = useRef(null);
 
     useEffect(() => {
         document.title = `${t('label.title')} — Jahia Administration`;
@@ -51,35 +50,25 @@ export const TomcatLogProviderAdmin = () => {
             console.error('Failed to save settings:', err);
             setSaveStatus('error');
         }
-
-        setTimeout(() => saveLiveRef.current?.focus(), 50);
     };
 
-    const saveLiveMsg = saveStatus === 'success' ? t('label.saveSuccess') :
-        saveStatus === 'error' ? t('label.saveError') : '';
+    const saveSuccessMsg = saveStatus === 'success' ? t('label.saveSuccess') : '';
+    const saveErrorMsg = saveStatus === 'error' ? t('label.saveError') : '';
 
     if (loading) {
         return (
-            <div className={styles.tlp_loading} role="status">
+            <div className={styles.tlp_loading} role="status" aria-live="polite">
                 <span className={styles.tlp_sr_only}>{t('label.loading')}</span>
-                <Loader size="big"/>
+                <Loader size="big" aria-hidden="true"/>
             </div>
         );
     }
 
     return (
         <div className={styles.tlp_container}>
-            {/* Persistent live region — always in DOM so AT registers it before status changes */}
-            <div
-                ref={saveLiveRef}
-                tabIndex={-1}
-                role={saveStatus === 'error' ? 'alert' : 'status'}
-                aria-live={saveStatus === 'error' ? 'assertive' : 'polite'}
-                aria-atomic="true"
-                className={styles.tlp_sr_only}
-            >
-                {saveLiveMsg}
-            </div>
+            {/* Two fixed-role live regions — always in DOM so AT registers them before status changes */}
+            <div role="status" aria-live="polite" aria-atomic="true" className={styles.tlp_sr_only}>{saveSuccessMsg}</div>
+            <div role="alert" aria-live="assertive" aria-atomic="true" className={styles.tlp_sr_only}>{saveErrorMsg}</div>
 
             <div className={styles.tlp_formSection}>
                 <div className={styles.tlp_header}>
@@ -107,7 +96,11 @@ export const TomcatLogProviderAdmin = () => {
                             id="tlp-mount-path"
                             className={styles.tlp_input}
                             value={mountPath}
-                            aria-describedby="tlp-mount-hint"
+                            required
+                            aria-required="true"
+                            aria-invalid={saveStatus === 'error' ? 'true' : undefined}
+                            aria-describedby="tlp-mount-hint tlp-mount-error"
+                            aria-keyshortcuts="Control+Enter"
                             onChange={e => {
                                 setMountPath(e.target.value);
                                 setSaveStatus(null);
@@ -119,6 +112,7 @@ export const TomcatLogProviderAdmin = () => {
                             }}
                         />
                         <span id="tlp-mount-hint" className={styles.tlp_hint}>{t('label.mountPathHint')}</span>
+                        <span id="tlp-mount-error" className={styles.tlp_sr_only}>{saveErrorMsg}</span>
                     </div>
                 </div>
 
@@ -137,16 +131,19 @@ export const TomcatLogProviderAdmin = () => {
                         <Button
                             label={t('label.save')}
                             variant="primary"
+                            type="button"
                             isDisabled={saving || !mountPath.trim()}
                             onClick={handleSave}
                         />
                         <Button
                             label={t('label.browseInJContent')}
                             variant="secondary"
+                            type="button"
                             isDisabled={!jContentUrl}
+                            aria-describedby="tlp-browse-newtab-hint"
                             onClick={() => window.open(jContentUrl, '_blank')}
                         />
-                        <span className={styles.tlp_sr_only}>{t('label.opensInNewTab')}</span>
+                        <span id="tlp-browse-newtab-hint" className={styles.tlp_sr_only}>{t('label.opensInNewTab')}</span>
                     </div>
                 </div>
             </div>
