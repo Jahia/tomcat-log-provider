@@ -131,7 +131,16 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         if (path == null || path.isEmpty() || FileSystem.SEPARATOR.equals(path)) {
             return root;
         }
-        return root.resolveFile(path.charAt(0) == FileSystem.SEPARATOR_CHAR ? path.substring(1) : path);
+        final String relative = path.charAt(0) == FileSystem.SEPARATOR_CHAR ? path.substring(1) : path;
+        final FileObject resolved = root.resolveFile(relative);
+        // Defense-in-depth: ensure the resolved file is within the log root (prevent path traversal).
+        final String resolvedPath = resolved.getName().getPath();
+        if (!resolvedPath.equals(rootPath)
+                && !resolvedPath.startsWith(rootPath + FileSystem.SEPARATOR)) {
+            LOGGER.warn("Rejected path outside Tomcat log root: {}", path);
+            throw new FileSystemException("vfs.provider/resolve-file.error", path);
+        }
+        return resolved;
     }
 
     @Override
