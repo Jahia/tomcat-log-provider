@@ -5,9 +5,10 @@ Jahia OSGi module that mounts Tomcat log files as a JCR virtual filesystem via a
 ## Key Facts
 
 - **artifactId**: `tomcat-log-provider` (module key: `tomcatLogProvider`)
-- **Java package**: `org.jahia.community.tomcatlogprovider`
-- **jahia-depends**: `default,graphql-dxm-provider,serverSettings`
-- **OSGi config PID**: `org.jahia.community.tomcatLogProvider`
+- **Java package**: `org.jahia.modules.external.tomcat.log` (GraphQL extensions in `.graphql` sub-package)
+- **jahia-depends**: `default,external-provider,graphql-dxm-provider` (defined in `pom.xml` properties)
+- **OSGi config PID**: `org.jahia.modules.tomcatlogprovider` (set via `@Component property = SERVICE_PID + "=..."`)
+- **OSGi DS annotations scan**: `_dsannotations = org.jahia.modules.external.tomcat.log.*` (in pom.xml maven-bundle-plugin)
 - `logPath` — resolved from `${catalina.base}/logs` at runtime (read-only)
 - `mountPath` — configurable; default: `/sites/systemsite/files/tomcat-logs`
 
@@ -17,6 +18,7 @@ Jahia OSGi module that mounts Tomcat log files as a JCR virtual filesystem via a
 |-------|------|
 | `TomcatLogMountPointService` | Merged `ManagedService` + mount lifecycle; `updated()`, `remount()`, `@Deactivate` |
 | `TomcatLogDataSource` | `ExternalDataSource`; maps VFS2 `FileObject` → `ExternalData` for log files/folders |
+| `TomcatLogBinaryImpl` | JCR `Binary` impl over VFS2 `FileContent` for streaming log file bytes |
 | `TomcatLogProviderGraphQLExtensionsProvider` | Registers GraphQL extensions |
 | `TomcatLogProviderQueryExtension` | GraphQL settings query + log tail query |
 | `TomcatLogProviderMutationExtension` | GraphQL save mutation |
