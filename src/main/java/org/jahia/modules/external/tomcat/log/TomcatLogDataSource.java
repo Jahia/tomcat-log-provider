@@ -1,17 +1,19 @@
 package org.jahia.modules.external.tomcat.log;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.commons.vfs2.*;
+import org.apache.commons.vfs2.FileContent;
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.FileSystemException;
+import org.apache.commons.vfs2.FileSystemManager;
+import org.apache.commons.vfs2.FileType;
+import org.apache.commons.vfs2.VFS;
 import org.apache.jackrabbit.core.fs.FileSystem;
 import org.apache.jackrabbit.util.ISO8601;
 import org.jahia.api.Constants;
 import org.jahia.modules.external.ExternalData;
 import org.jahia.modules.external.ExternalDataSource;
-import org.jahia.registries.ServicesRegistry;
 import org.jahia.services.content.JCRContentUtils;
-import org.jahia.services.content.decorator.JCRUserNode;
-import org.jahia.services.sites.JahiaSitesService;
-import org.jahia.services.usermanager.JahiaUserManagerService;
+import org.jahia.services.content.JCRSessionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +37,24 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     public static String getTomcatLogPath() {
         return System.getProperty("catalina.base") + File.separator + "logs";
+    }
+
+    // Converts a raw filesystem relative path to a JCR-safe path by escaping each
+    // segment individually. escapeNodePath() preserves ':' (valid in qualified names
+    // like jcr:content) but filenames such as ISO timestamps contain ':' which is
+    // illegal in unqualified JCR node names.
+    private static String toJcrPath(String filesystemRelativePath) {
+        if (filesystemRelativePath == null || filesystemRelativePath.isEmpty()) {
+            return FileSystem.SEPARATOR;
+        }
+        String[] segments = filesystemRelativePath.split("/", -1);
+        StringBuilder sb = new StringBuilder();
+        for (String segment : segments) {
+            if (!segment.isEmpty()) {
+                sb.append(FileSystem.SEPARATOR).append(Escaping.escapeIllegalJcrChars(segment));
+            }
+        }
+        return sb.length() == 0 ? FileSystem.SEPARATOR : sb.toString();
     }
 
     public void setRoot() {
@@ -107,7 +127,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     @Override
     public ExternalData getItemByPath(String path) throws PathNotFoundException {
         try {
-            String unescapedPath = JCRContentUtils.unescapeLocalNodeName(path);
+            String unescapedPath = Escaping.unescapeIllegalJcrChars(path);
             if (path.endsWith(JCR_CONTENT_SUFFIX)) {
                 FileObject fileObject = getFile(StringUtils.substringBeforeLast(unescapedPath, JCR_CONTENT_SUFFIX));
                 if (!fileObject.exists() || fileObject.getType() == FileType.FOLDER) {
@@ -172,7 +192,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         final List<String> children = new LinkedList<>();
         for (FileObject object : fileObject.getChildren()) {
             if (getSupportedNodeTypes().contains(getDataType(object))) {
-                children.add(JCRContentUtils.escapeLocalNodeName(object.getName().getBaseName()));
+                children.add(Escaping.escapeIllegalJcrChars(object.getName().getBaseName()));
             }
         }
         return children;
@@ -243,14 +263,13 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     @Override
     public String[] getPrivilegesNames(String username, String path) {
-        final JahiaUserManagerService userManagerService = JahiaUserManagerService.getInstance();
-        final JCRUserNode userNode = userManagerService.lookupUser(username);
-        final String[] privileges;
-        if (ServicesRegistry.getInstance().getJahiaGroupManagerService().isAdminMember(userNode.getName(), JahiaSitesService.SYSTEM_SITE_KEY)) {
-            privileges = new String[1];
-            privileges[0] = Constants.JCR_READ_RIGHTS + "_" + Constants.EDIT_WORKSPACE;
-        } else {
-            privileges = new String[0];
+        String[] privileges = new String[0];
+        try {
+            if (JCRSessionFactory.getInstance().getCurrentUserSession(Constants.EDIT_WORKSPACE).getNode("/").hasPermission("admin")) {
+                privileges = new String[]{Constants.JCR_READ_RIGHTS + "_" + Constants.EDIT_WORKSPACE};
+            }
+        } catch (RepositoryException ex) {
+            LOGGER.error("Cannot get node privileges", ex);
         }
         return privileges;
     }
@@ -284,7 +303,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
         }
 
-        String path = JCRContentUtils.escapeNodePath(fileObject.getName().getPath().substring(rootPath.length()));
+        String path = toJcrPath(fileObject.getName().getPath().substring(rootPath.length()));
         if (!path.startsWith(FileSystem.SEPARATOR)) {
             path = FileSystem.SEPARATOR + path;
         }
@@ -305,7 +324,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
         properties.put(Constants.JCR_MIMETYPE, new String[]{getContentType(content)});
 
-        final String path = JCRContentUtils.escapeNodePath(content.getFile().getName().getPath().substring(rootPath.length()));
+        final String path = toJcrPath(content.getFile().getName().getPath().substring(rootPath.length()));
         final String jcrContentPath = path + FileSystem.SEPARATOR + Constants.JCR_CONTENT;
         final ExternalData externalData = new ExternalData(jcrContentPath, jcrContentPath, Constants.JAHIANT_RESOURCE, properties);
         final Map<String, Binary[]> binaryProperties = new HashMap<>(1);
