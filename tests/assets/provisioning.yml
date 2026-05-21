@@ -6,4 +6,10 @@
   autoStart: true
   uninstallPreviousVersion: false
 
+- karafCommand: "log:log 'Create colon-named log file for regression test'"
+- executeScript:
+    fileSource:
+      file: 'setup-colon-log.groovy'
+    type: 'groovy'
+
 - karafCommand: "log:log 'END - provisioning tomcat-log-provider'"

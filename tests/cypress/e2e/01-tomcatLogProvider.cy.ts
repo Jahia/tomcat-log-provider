@@ -104,6 +104,21 @@ describe('Tomcat Log Provider', () => {
                 .its('body')
                 .should('not.be.empty');
         });
+
+        it('log file with ISO timestamp name (colons) is accessible as jnt:file', () => {
+            // Regression: filenames containing ':' (e.g. ISO 8601 timestamps) caused
+            // MalformedPathException because escapeNodePath() did not escape ':'.
+            cy.login();
+            cy.apollo({
+                query: getLogFile,
+                variables: {path: `${defaultMountPath}/localhost_access_log.2026-01-22T14%3A15%3A28.log`}
+            })
+                .its('data.jcr.nodeByPath')
+                .should(node => {
+                    expect(node).to.not.be.null;
+                    expect(node.primaryNodeType.name).to.eq('jnt:file');
+                });
+        });
     });
 
     // ─── Admin UI — Configuration ─────────────────────────────────────────────────
