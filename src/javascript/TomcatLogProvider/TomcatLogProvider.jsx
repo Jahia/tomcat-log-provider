@@ -46,8 +46,7 @@ export const TomcatLogProviderAdmin = () => {
         try {
             const result = await saveSettings({variables: {mountPath}});
             setSaveStatus(result.data?.tomcatLogSaveSettings ? 'success' : 'error');
-        } catch (err) {
-            console.error('Failed to save settings:', err);
+        } catch (_err) {
             setSaveStatus('error');
         }
     };

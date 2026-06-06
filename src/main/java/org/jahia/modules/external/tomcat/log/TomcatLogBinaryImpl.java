@@ -54,7 +54,19 @@ public final class TomcatLogBinaryImpl implements Binary {
         int read = 0;
         try {
             is = getStream();
-            read = is.read(b, (int) position, b.length);
+            // Skip to the requested position before reading into the buffer.
+            // IOUtils.skip is used instead of InputStream.skip because some
+            // implementations do not guarantee skipping the full amount.
+            long remaining = position;
+            while (remaining > 0) {
+                long skipped = IOUtils.skip(is, remaining);
+                if (skipped == 0) {
+                    // EOF reached before position; nothing to read
+                    return -1;
+                }
+                remaining -= skipped;
+            }
+            read = is.read(b, 0, b.length);
         } finally {
             IOUtils.closeQuietly(is);
         }
