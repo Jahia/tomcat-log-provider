@@ -27,6 +27,7 @@ public class TomcatLogProviderQueryExtension {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TomcatLogProviderQueryExtension.class);
     private static final int DEFAULT_TAIL_LINES = 200;
+    private static final int MAX_TAIL_LINES = 5000;
     // 256 KB is ample for 200 typical log lines (~200 bytes each)
     private static final int TAIL_CHUNK_BYTES = 256 * 1024;
 
@@ -49,9 +50,16 @@ public class TomcatLogProviderQueryExtension {
     @GraphQLRequiresPermission("admin")
     public static List<String> logTail(
             @GraphQLName("lines") @GraphQLDescription("Number of lines to return; defaults to 200") Integer lines) {
-        final File logFile = new File(TomcatLogDataSource.getTomcatLogPath(), "jahia.log");
+        final String logDir = TomcatLogDataSource.getTomcatLogPath();
+        if (logDir == null) {
+            LOGGER.warn("catalina.base system property is not set; cannot tail log file");
+            return Collections.emptyList();
+        }
+        final File logFile = new File(logDir, "jahia.log");
+        final int requestedLines = lines != null && lines > 0 ? lines : DEFAULT_TAIL_LINES;
+        final int cappedLines = Math.min(requestedLines, MAX_TAIL_LINES);
         try {
-            return tailFile(logFile, lines != null && lines > 0 ? lines : DEFAULT_TAIL_LINES);
+            return tailFile(logFile, cappedLines);
         } catch (IOException e) {
             LOGGER.error("Cannot read {}", logFile.getAbsolutePath(), e);
             return Collections.emptyList();

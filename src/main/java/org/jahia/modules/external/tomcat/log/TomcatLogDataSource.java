@@ -14,6 +14,7 @@ import org.jahia.modules.external.ExternalData;
 import org.jahia.modules.external.ExternalDataSource;
 import org.jahia.services.content.JCRContentUtils;
 import org.jahia.services.content.JCRSessionFactory;
+import org.jahia.services.content.JCRSessionWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +37,11 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     private FileSystemManager manager;
 
     public static String getTomcatLogPath() {
-        return System.getProperty("catalina.base") + File.separator + "logs";
+        final String catalinaBase = System.getProperty("catalina.base");
+        if (catalinaBase == null) {
+            return null;
+        }
+        return catalinaBase + File.separator + "logs";
     }
 
     // Converts a raw filesystem relative path to a JCR-safe path by escaping each
@@ -265,7 +270,8 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     public String[] getPrivilegesNames(String username, String path) {
         String[] privileges = new String[0];
         try {
-            if (JCRSessionFactory.getInstance().getCurrentUserSession(Constants.EDIT_WORKSPACE).getNode("/").hasPermission("admin")) {
+            final JCRSessionWrapper session = JCRSessionFactory.getInstance().getCurrentUserSession(Constants.EDIT_WORKSPACE);
+            if (session != null && session.getNode("/").hasPermission("admin")) {
                 privileges = new String[]{Constants.JCR_READ_RIGHTS + "_" + Constants.EDIT_WORKSPACE};
             }
         } catch (RepositoryException ex) {
