@@ -14,7 +14,7 @@ public final class TomcatLogBinaryImpl implements Binary {
     
     private static final Logger logger = LoggerFactory.getLogger(TomcatLogBinaryImpl.class);
 
-    private FileContent fileContent;
+    private final FileContent fileContent;
 
     public TomcatLogBinaryImpl(FileContent fileContent) {
         super();
@@ -50,6 +50,12 @@ public final class TomcatLogBinaryImpl implements Binary {
 
     @Override
     public int read(byte[] b, long position) throws IOException, RepositoryException {
+        if (b == null) {
+            throw new NullPointerException("destination buffer must not be null");
+        }
+        if (position < 0) {
+            throw new IOException("position must not be negative: " + position);
+        }
         InputStream is = null;
         int read = 0;
         try {
