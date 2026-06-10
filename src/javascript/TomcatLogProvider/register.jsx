@@ -8,21 +8,21 @@ export default () => {
     console.debug('%c tomcat-log-provider: activation in progress', 'color: #006633');
     registry.add('adminRoute', 'tomcatLog', {
         targets: ['administration-server:99'],
-        requiredPermission: 'admin',
+        requiredPermission: 'tomcatLogProviderAdmin',
         icon: <Text/>,
         label: 'tomcat-log-provider:label.main_menu_entry',
         isSelectable: false
     });
     registry.add('adminRoute', 'tomcatLogProvider', {
         targets: ['administration-server-tomcatLog:1'],
-        requiredPermission: 'admin',
+        requiredPermission: 'tomcatLogProviderAdmin',
         label: 'tomcat-log-provider:label.conf_menu_entry',
         isSelectable: true,
         render: () => React.createElement(TomcatLogProviderAdmin)
     });
     registry.add('adminRoute', 'tomcatLogViewer', {
         targets: ['administration-server-tomcatLog:2'],
-        requiredPermission: 'admin',
+        requiredPermission: 'tomcatLogProviderAdmin',
         label: 'tomcat-log-provider:label.logViewer_menu_entry',
         isSelectable: true,
         render: () => React.createElement(TomcatLogViewer)
