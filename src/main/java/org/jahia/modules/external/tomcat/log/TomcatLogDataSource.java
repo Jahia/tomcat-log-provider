@@ -301,7 +301,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         String[] privileges = new String[0];
         try {
             final JCRSessionWrapper session = JCRSessionFactory.getInstance().getCurrentUserSession(Constants.EDIT_WORKSPACE);
-            if (session != null && session.getNode("/").hasPermission("admin")) {
+            if (session != null && session.getNode("/").hasPermission("tomcatLogProviderAdmin")) {
                 privileges = new String[]{Constants.JCR_READ_RIGHTS + "_" + Constants.EDIT_WORKSPACE};
             }
         } catch (RepositoryException ex) {
