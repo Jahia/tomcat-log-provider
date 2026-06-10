@@ -23,6 +23,7 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSource.Writable, ExternalDataSource.CanLoadChildrenInBatch, ExternalDataSource.SupportPrivileges {
@@ -32,8 +33,11 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     private static final Logger LOGGER = LoggerFactory.getLogger(TomcatLogDataSource.class);
     private static final String JCR_CONTENT_SUFFIX = FileSystem.SEPARATOR + Constants.JCR_CONTENT;
     private static final String UNKNOWN_FILE_TYPE = "Found non file or folder entry at path {}, maybe an alias. VFS file type: {}";
+    private static final String DEFAULT_CONTENT_TYPE = "application/octet-stream";
+    private static final String IMAGE_CONTENT_TYPE_PATTERN = "image/(.*)";
     private FileObject root;
     private String rootPath;
+    private String canonicalRootPath;
     private FileSystemManager manager;
 
     public static String getTomcatLogPath() {
@@ -68,7 +72,9 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
             manager = VFS.getManager();
             root = manager.resolveFile(tomcatLogPath);
             rootPath = root.getName().getPath();
-        } catch (FileSystemException ex) {
+            // Resolve symlinks once so getFile() can reject symlink escapes from the log root.
+            canonicalRootPath = new File(rootPath).getCanonicalPath();
+        } catch (IOException ex) {
             throw new IllegalStateException("Cannot set root to " + tomcatLogPath, ex);
         }
     }
@@ -97,6 +103,9 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     @Override
     public boolean itemExists(String path) {
+        if (StringUtils.isBlank(path)) {
+            return false;
+        }
         try {
             final FileObject file = getFile(path.endsWith(JCR_CONTENT_SUFFIX) ? StringUtils.substringBeforeLast(
                     path, JCR_CONTENT_SUFFIX) : path);
@@ -119,6 +128,9 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     @Override
     public ExternalData getItemByIdentifier(String identifier) throws ItemNotFoundException {
+        if (identifier == null) {
+            throw new ItemNotFoundException("null identifier");
+        }
         if (identifier.startsWith(FileSystem.SEPARATOR)) {
             try {
                 return getItemByPath(identifier);
@@ -131,6 +143,9 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
 
     @Override
     public ExternalData getItemByPath(String path) throws PathNotFoundException {
+        if (StringUtils.isBlank(path)) {
+            throw new PathNotFoundException("null or blank path");
+        }
         try {
             String unescapedPath = Escaping.unescapeIllegalJcrChars(path);
             if (path.endsWith(JCR_CONTENT_SUFFIX)) {
@@ -160,12 +175,27 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
         final FileObject resolved = root.resolveFile(relative);
         // Defense-in-depth: ensure the resolved file is within the log root (prevent path traversal).
         final String resolvedPath = resolved.getName().getPath();
-        if (!resolvedPath.equals(rootPath)
-                && !resolvedPath.startsWith(rootPath + FileSystem.SEPARATOR)) {
+        if (!isWithinRoot(resolvedPath, rootPath) || !isCanonicallyWithinRoot(resolvedPath)) {
             LOGGER.warn("Rejected path outside Tomcat log root: {}", path);
             throw new FileSystemException("vfs.provider/resolve-file.error", path);
         }
         return resolved;
+    }
+
+    private static boolean isWithinRoot(String candidatePath, String rootPath) {
+        return candidatePath.equals(rootPath) || candidatePath.startsWith(rootPath + FileSystem.SEPARATOR);
+    }
+
+    // Canonicalizes the resolved path (following symlinks) and verifies it is still inside the
+    // log root, so a symlink planted in the log directory cannot expose files elsewhere on disk.
+    private boolean isCanonicallyWithinRoot(String resolvedPath) {
+        try {
+            final String canonical = new File(resolvedPath).getCanonicalPath();
+            return isWithinRoot(canonical, canonicalRootPath);
+        } catch (IOException ex) {
+            LOGGER.warn("Cannot canonicalize path {}; rejecting", resolvedPath, ex);
+            return false;
+        }
     }
 
     @Override
@@ -303,7 +333,7 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
             }
             // Add jmix:image mixin in case of the file is a picture.
             if (content.getContentInfo() != null && content.getContentInfo().getContentType() != null
-                    && fileObject.getContent().getContentInfo().getContentType().matches("image/(.*)")) {
+                    && content.getContentInfo().getContentType().matches(IMAGE_CONTENT_TYPE_PATTERN)) {
                 addedMixins.add(Constants.JAHIAMIX_IMAGE);
             }
 
@@ -341,13 +371,15 @@ public class TomcatLogDataSource implements ExternalDataSource, ExternalDataSour
     }
 
     protected String getContentType(FileContent content) throws FileSystemException {
-        String s1 = content.getContentInfo().getContentType();
-        if (s1 == null) {
-            s1 = JCRContentUtils.getMimeType(content.getFile().getName().getBaseName());
+        // content.getContentInfo() may return null (see null-guard in getFile(FileObject)),
+        // so resolve defensively rather than dereferencing it directly.
+        String contentType = content.getContentInfo() != null ? content.getContentInfo().getContentType() : null;
+        if (contentType == null) {
+            contentType = JCRContentUtils.getMimeType(content.getFile().getName().getBaseName());
         }
-        if (s1 == null) {
-            s1 = "application/octet-stream";
+        if (contentType == null) {
+            contentType = DEFAULT_CONTENT_TYPE;
         }
-        return s1;
+        return contentType;
     }
 }
