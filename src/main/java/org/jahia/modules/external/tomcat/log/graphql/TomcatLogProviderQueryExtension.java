@@ -37,7 +37,7 @@ public class TomcatLogProviderQueryExtension {
     @GraphQLField
     @GraphQLName("tomcatLogSettings")
     @GraphQLDescription("Returns the current Tomcat Log Provider settings")
-    @GraphQLRequiresPermission("admin")
+    @GraphQLRequiresPermission("tomcatLogProviderAdmin")
     public static GqlSettings settings() {
         final TomcatLogMountPointService service = BundleUtils.getOsgiService(TomcatLogMountPointService.class, null);
         final String mountPath = service != null ? service.getMountPath() : TomcatLogMountPointService.DEFAULT_MOUNT_PATH;
@@ -47,7 +47,7 @@ public class TomcatLogProviderQueryExtension {
     @GraphQLField
     @GraphQLName("tomcatLogTail")
     @GraphQLDescription("Returns the last N lines of jahia.log in chronological order")
-    @GraphQLRequiresPermission("admin")
+    @GraphQLRequiresPermission("tomcatLogProviderAdmin")
     public static List<String> logTail(
             @GraphQLName("lines") @GraphQLDescription("Number of lines to return; defaults to 200") Integer lines) {
         final String logDir = TomcatLogDataSource.getTomcatLogPath();

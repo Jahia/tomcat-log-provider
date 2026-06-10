@@ -28,7 +28,7 @@ public class TomcatLogProviderMutationExtension {
     @GraphQLField
     @GraphQLName("tomcatLogSaveSettings")
     @GraphQLDescription("Saves the Tomcat Log Provider settings. The provider will remount at the new JCR path.")
-    @GraphQLRequiresPermission("admin")
+    @GraphQLRequiresPermission("tomcatLogProviderAdmin")
     public static Boolean saveSettings(
             @GraphQLName("mountPath") @GraphQLDescription("JCR path where Tomcat log files should be mounted") String mountPath) {
         try {
