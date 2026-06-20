@@ -71,8 +71,7 @@ class TomcatLogTailTest {
         List<String> tail = TomcatLogProviderQueryExtension.logTail(null);
 
         // Capped at the default of 200 elements, most recent line still present.
-        assertThat(tail).hasSize(200);
-        assertThat(tail).contains("line-500");
+        assertThat(tail).hasSize(200).contains("line-500");
     }
 
     @Test
