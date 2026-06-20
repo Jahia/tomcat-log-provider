@@ -28,7 +28,7 @@ describe('Tomcat Log Provider', () => {
     describe('GraphQL API', () => {
         it('returns settings fields via query', () => {
             cy.apollo({query: getSettings})
-                .its('data.tomcatLogSettings')
+                .its('data.tomcatLog.settings')
                 .should(s => {
                     expect(s).to.have.property('mountPath');
                     expect(s).to.have.property('logPath');
@@ -37,13 +37,13 @@ describe('Tomcat Log Provider', () => {
 
         it('mountPath is a non-empty JCR path', () => {
             cy.apollo({query: getSettings})
-                .its('data.tomcatLogSettings.mountPath')
+                .its('data.tomcatLog.settings.mountPath')
                 .should('match', /^\/.+/);
         });
 
         it('logPath contains "logs"', () => {
             cy.apollo({query: getSettings})
-                .its('data.tomcatLogSettings.logPath')
+                .its('data.tomcatLog.settings.logPath')
                 .should('include', 'logs');
         });
 
@@ -52,7 +52,7 @@ describe('Tomcat Log Provider', () => {
                 mutation: saveSettings,
                 variables: {mountPath: '/sites/systemsite/files/tomcat-logs-test'}
             })
-                .its('data.tomcatLogSaveSettings')
+                .its('data.tomcatLog.saveSettings')
                 .should('eq', true);
         });
 
@@ -63,7 +63,7 @@ describe('Tomcat Log Provider', () => {
                 variables: {mountPath: testPath}
             });
             cy.apollo({query: getSettings})
-                .its('data.tomcatLogSettings.mountPath')
+                .its('data.tomcatLog.settings.mountPath')
                 .should('eq', testPath);
         });
     });

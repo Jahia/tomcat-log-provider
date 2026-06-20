@@ -62,7 +62,7 @@ describe('Tomcat Log Provider — permission enforcement', () => {
         it('allows the gated query for a user granted only the module permission', () => {
             querySettingsAs(ALLOWED_USER).then((result: never) => {
                 expect(errorsOf(result), 'should have no errors').to.have.length(0);
-                const settings = (result as {data: {tomcatLogSettings: {mountPath: string; logPath: string}}}).data.tomcatLogSettings;
+                const settings = (result as {data: {tomcatLog: {settings: {mountPath: string; logPath: string}}}}).data.tomcatLog.settings;
                 expect(settings).to.have.property('mountPath');
                 expect(settings).to.have.property('logPath');
             });

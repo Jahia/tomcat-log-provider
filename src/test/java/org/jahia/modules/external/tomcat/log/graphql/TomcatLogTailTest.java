@@ -57,7 +57,7 @@ class TomcatLogTailTest {
     void logTail_returnsLastNLines() throws IOException {
         writeLines(1000);
 
-        List<String> tail = TomcatLogProviderQueryExtension.logTail(5);
+        List<String> tail = new TomcatLogProviderQuery().logTail(5);
 
         // The file ends with a trailing newline, so split(-1) yields a final empty element.
         assertThat(tail).containsExactly("line-997", "line-998", "line-999", "line-1000", "");
@@ -68,7 +68,7 @@ class TomcatLogTailTest {
     void logTail_nullLines_defaultsTo200() throws IOException {
         writeLines(500);
 
-        List<String> tail = TomcatLogProviderQueryExtension.logTail(null);
+        List<String> tail = new TomcatLogProviderQuery().logTail(null);
 
         // Capped at the default of 200 elements, most recent line still present.
         assertThat(tail).hasSize(200).contains("line-500");
@@ -79,7 +79,7 @@ class TomcatLogTailTest {
     void logTail_aboveMax_isCapped() throws IOException {
         writeLines(20);
 
-        List<String> tail = TomcatLogProviderQueryExtension.logTail(1_000_000);
+        List<String> tail = new TomcatLogProviderQuery().logTail(1_000_000);
 
         // Whole (small) file fits well under the cap; never explodes the request
         assertThat(tail).contains("line-1", "line-20");
@@ -88,7 +88,7 @@ class TomcatLogTailTest {
     @Test
     @DisplayName("returns empty list when the log file is missing")
     void logTail_missingFile_returnsEmpty() {
-        List<String> tail = TomcatLogProviderQueryExtension.logTail(10);
+        List<String> tail = new TomcatLogProviderQuery().logTail(10);
 
         assertThat(tail).isEmpty();
     }

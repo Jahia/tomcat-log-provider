@@ -1,3 +1,5 @@
 mutation saveSettings($mountPath: String!) {
-    tomcatLogSaveSettings(mountPath: $mountPath)
+    tomcatLog {
+        saveSettings(mountPath: $mountPath)
+    }
 }
