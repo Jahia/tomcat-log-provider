@@ -1,4 +1,4 @@
-package org.jahia.modules.external.tomcat.log;
+package org.jahia.community.external.tomcat.log;
 
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.vfs2.FileContent;

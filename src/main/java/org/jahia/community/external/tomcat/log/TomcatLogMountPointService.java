@@ -1,4 +1,4 @@
-package org.jahia.modules.external.tomcat.log;
+package org.jahia.community.external.tomcat.log;
 
 import org.jahia.api.Constants;
 import org.jahia.exceptions.JahiaInitializationException;

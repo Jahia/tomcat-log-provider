@@ -130,7 +130,7 @@
                 <extensions>true</extensions>
                 <configuration>
                     <instructions>
-                        <_dsannotations>org.jahia.modules.external.tomcat.log.*</_dsannotations>
+                        <_dsannotations>org.jahia.community.external.tomcat.log.*</_dsannotations>
                     </instructions>
                 </configuration>
             </plugin>

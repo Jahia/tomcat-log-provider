@@ -1,4 +1,4 @@
-package org.jahia.modules.external.tomcat.log.graphql;
+package org.jahia.community.external.tomcat.log.graphql;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
