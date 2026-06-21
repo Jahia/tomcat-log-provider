@@ -1,10 +1,10 @@
-package org.jahia.modules.external.tomcat.log.graphql;
+package org.jahia.community.external.tomcat.log.graphql;
 
 import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;
 import graphql.annotations.annotationTypes.GraphQLName;
-import org.jahia.modules.external.tomcat.log.TomcatLogDataSource;
-import org.jahia.modules.external.tomcat.log.TomcatLogMountPointService;
+import org.jahia.community.external.tomcat.log.TomcatLogDataSource;
+import org.jahia.community.external.tomcat.log.TomcatLogMountPointService;
 import org.jahia.modules.graphql.provider.dxm.security.GraphQLRequiresPermission;
 import org.jahia.osgi.BundleUtils;
 import org.slf4j.Logger;

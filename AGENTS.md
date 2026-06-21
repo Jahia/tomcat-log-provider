@@ -5,10 +5,10 @@ Jahia OSGi module that mounts Tomcat log files as a JCR virtual filesystem via a
 ## Key Facts
 
 - **artifactId**: `tomcat-log-provider` (module key: `tomcatLogProvider`)
-- **Java package**: `org.jahia.modules.external.tomcat.log` (GraphQL extensions in `.graphql` sub-package)
+- **Java package**: `org.jahia.community.external.tomcat.log` (GraphQL extensions in `.graphql` sub-package)
 - **jahia-depends**: `default,external-provider,graphql-dxm-provider` (defined in `pom.xml` properties)
 - **OSGi config PID**: `org.jahia.modules.tomcatlogprovider` (set via `@Component property = SERVICE_PID + "=..."`)
-- **OSGi DS annotations scan**: `_dsannotations = org.jahia.modules.external.tomcat.log.*` (in pom.xml maven-bundle-plugin)
+- **OSGi DS annotations scan**: `_dsannotations = org.jahia.community.external.tomcat.log.*` (in pom.xml maven-bundle-plugin)
 - `logPath` — resolved from `${catalina.base}/logs` at runtime (read-only)
 - `mountPath` — configurable; default: `/sites/systemsite/files/tomcat-logs`
 

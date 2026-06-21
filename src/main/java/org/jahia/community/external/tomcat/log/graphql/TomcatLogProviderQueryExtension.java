@@ -1,4 +1,4 @@
-package org.jahia.modules.external.tomcat.log.graphql;
+package org.jahia.community.external.tomcat.log.graphql;
 
 import graphql.annotations.annotationTypes.GraphQLDescription;
 import graphql.annotations.annotationTypes.GraphQLField;

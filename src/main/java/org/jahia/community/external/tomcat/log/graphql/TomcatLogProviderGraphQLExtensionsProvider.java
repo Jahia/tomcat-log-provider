@@ -1,4 +1,4 @@
-package org.jahia.modules.external.tomcat.log.graphql;
+package org.jahia.community.external.tomcat.log.graphql;
 
 import org.jahia.modules.graphql.provider.dxm.DXGraphQLExtensionsProvider;
 import org.osgi.service.component.annotations.Component;
