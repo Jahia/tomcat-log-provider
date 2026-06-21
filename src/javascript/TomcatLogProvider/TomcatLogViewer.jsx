@@ -18,7 +18,7 @@ export const TomcatLogViewer = () => {
         fetchPolicy: 'network-only',
         pollInterval: 2000
     });
-    const logLines = useMemo(() => tailData?.tomcatLogTail ?? [], [tailData]);
+    const logLines = useMemo(() => tailData?.tomcatLog?.tail ?? [], [tailData]);
 
     useEffect(() => {
         if (autoScroll && logEndRef.current) {

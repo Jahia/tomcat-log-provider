@@ -28,7 +28,7 @@ export const TomcatLogProviderAdmin = () => {
     const {loading} = useQuery(GET_SETTINGS, {
         fetchPolicy: 'network-only',
         onCompleted: data => {
-            const s = data?.tomcatLogSettings;
+            const s = data?.tomcatLog?.settings;
             if (s) {
                 setMountPath(s.mountPath ?? '');
             }
@@ -36,7 +36,7 @@ export const TomcatLogProviderAdmin = () => {
     });
 
     const {data} = useQuery(GET_SETTINGS, {fetchPolicy: 'cache-first'});
-    const logPath = data?.tomcatLogSettings?.logPath ?? '';
+    const logPath = data?.tomcatLog?.settings?.logPath ?? '';
     const jContentUrl = buildJContentUrl(mountPath);
 
     const [saveSettings, {loading: saving}] = useMutation(SAVE_SETTINGS);
@@ -45,7 +45,7 @@ export const TomcatLogProviderAdmin = () => {
         setSaveStatus(null);
         try {
             const result = await saveSettings({variables: {mountPath}});
-            setSaveStatus(result.data?.tomcatLogSaveSettings ? 'success' : 'error');
+            setSaveStatus(result.data?.tomcatLog?.saveSettings ? 'success' : 'error');
         } catch (_err) {
             setSaveStatus('error');
         }
