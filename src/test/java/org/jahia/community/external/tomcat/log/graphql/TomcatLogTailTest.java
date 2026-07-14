@@ -52,6 +52,20 @@ class TomcatLogTailTest {
         Files.write(logFile, content.getBytes(StandardCharsets.UTF_8));
     }
 
+    // Each line is padded to ~100 bytes so a modest line count comfortably exceeds the
+    // 256 KB tail window, proving the byte-window seek (not just the line cap) bounds the read.
+    private void writeLongLines(int count) throws IOException {
+        StringBuilder pad = new StringBuilder();
+        for (int i = 0; i < 90; i++) {
+            pad.append('x');
+        }
+        String suffix = pad.toString();
+        String content = IntStream.rangeClosed(1, count)
+                .mapToObj(i -> "line-" + i + "-" + suffix)
+                .collect(Collectors.joining("\n", "", "\n"));
+        Files.write(logFile, content.getBytes(StandardCharsets.UTF_8));
+    }
+
     @Test
     @DisplayName("returns the last N lines in chronological order")
     void logTail_returnsLastNLines() throws IOException {
@@ -75,19 +89,64 @@ class TomcatLogTailTest {
     }
 
     @Test
-    @DisplayName("caps requested lines at the maximum")
-    void logTail_aboveMax_isCapped() throws IOException {
-        writeLines(20);
+    @DisplayName("S11: caps at MAX_TAIL_LINES (5000) under real pressure with a large file")
+    void logTail_aboveMax_isCappedAt5000() throws IOException {
+        // 10 000 lines exceeds the 5000 cap (the old 20-line test never exercised the cap).
+        writeLines(10_000);
 
         List<String> tail = new TomcatLogProviderQuery().logTail(1_000_000);
 
-        // Whole (small) file fits well under the cap; never explodes the request
-        assertThat(tail).contains("line-1", "line-20");
+        // 5000 lines + trailing empty element from split("\n", -1).
+        assertThat(tail).hasSizeLessThanOrEqualTo(5001);
+        assertThat(tail).contains("line-10000");
+        assertThat(tail).doesNotContain("line-1");
+    }
+
+    @Test
+    @DisplayName("S12: reads only the trailing 256 KB window regardless of file size (no DoS)")
+    void logTail_readsOnly256KbWindow() throws IOException {
+        // ~1 MB file of ~100-byte lines. 256 KB holds far fewer than 5000 such lines, so the
+        // byte-window (not the line cap) bounds the read — proving a huge file can't force a huge read.
+        writeLongLines(10_000);
+        assertThat(logFile.toFile().length())
+                .as("file must be well over the 256 KB tail window")
+                .isGreaterThan(256 * 1024L);
+
+        long start = System.nanoTime();
+        List<String> tail = new TomcatLogProviderQuery().logTail(5000);
+        long elapsedMs = (System.nanoTime() - start) / 1_000_000;
+
+        // Fewer lines than requested are returned because only the last 256 KB is read.
+        assertThat(tail.size())
+                .as("byte window bounds the read below the requested 5000 lines")
+                .isLessThan(5000);
+        assertThat(tail).noneMatch(l -> l.startsWith("line-1-"));
+        assertThat(tail).anyMatch(l -> l.startsWith("line-10000-"));
+        assertThat(elapsedMs).as("bounded read completes quickly").isLessThan(5000);
+    }
+
+    @Test
+    @DisplayName("S13: <=0 requested lines falls back to the default 200")
+    void logTail_nonPositiveLines_defaultsTo200() throws IOException {
+        writeLines(500);
+
+        assertThat(new TomcatLogProviderQuery().logTail(0)).hasSize(200);
+        assertThat(new TomcatLogProviderQuery().logTail(-5)).hasSize(200);
     }
 
     @Test
     @DisplayName("returns empty list when the log file is missing")
     void logTail_missingFile_returnsEmpty() {
+        List<String> tail = new TomcatLogProviderQuery().logTail(10);
+
+        assertThat(tail).isEmpty();
+    }
+
+    @Test
+    @DisplayName("S15: returns empty (no exception) when catalina.base is unset")
+    void logTail_catalinaBaseUnset_returnsEmpty() {
+        System.clearProperty(CATALINA_BASE);
+
         List<String> tail = new TomcatLogProviderQuery().logTail(10);
 
         assertThat(tail).isEmpty();

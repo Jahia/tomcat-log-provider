@@ -25,6 +25,8 @@ describe('Tomcat Log Provider — permission enforcement', () => {
 
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const getSettings: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/query/getMountPoints.graphql');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const saveSettings: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/mutation/addMountPoint.graphql');
 
     const errorsOf = (result: {graphQLErrors?: Array<{message: string}>; errors?: Array<{message: string}>}) =>
         result.graphQLErrors ?? result.errors ?? [];
@@ -66,6 +68,25 @@ describe('Tomcat Log Provider — permission enforcement', () => {
                 expect(settings).to.have.property('mountPath');
                 expect(settings).to.have.property('logPath');
             });
+        });
+
+        // S50: the state-changing mutation must be independently gated (not just the query).
+        it('denies the saveSettings mutation for a user without the permission', () => {
+            const attemptedPath = '/sites/systemsite/files/tomcat-logs-denied-attempt';
+            cy.apolloClient({username: DENIED_USER, password: PASSWORD});
+            cy.apollo({mutation: saveSettings, variables: {mountPath: attemptedPath}})
+                .then((result: never) => {
+                    const errs = errorsOf(result);
+                    expect(errs, 'denial errors').to.have.length.greaterThan(0);
+                    expect(errs.map((e: {message: string}) => e.message).join(' ')).to.contain('Permission denied');
+                });
+
+            // Roundtrip as root: the mountPath must NOT have been changed by the denied user.
+            cy.apolloClient();
+            cy.login();
+            cy.apollo({query: getSettings})
+                .its('data.tomcatLog.settings.mountPath')
+                .should('not.eq', attemptedPath);
         });
     });
 
