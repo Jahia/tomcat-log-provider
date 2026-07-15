@@ -1,0 +1,5 @@
+query getTail($lines: Int) {
+    tomcatLog {
+        tail(lines: $lines)
+    }
+}

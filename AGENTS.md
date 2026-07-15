@@ -29,13 +29,19 @@ VFS2 root: `StandardFileSystemManager.resolveFile("file:" + logPath)`.
 
 ## GraphQL API
 
-| Operation | Name | Notes |
-|-----------|------|-------|
-| Query | `tomcatLogSettings` → `{mountPath, logPath}` | `logPath` is read-only |
-| Query | `tomcatLogTail(lines?)` → `[String]` | Returns last N lines of `jahia.log`; used for live tail polling |
-| Mutation | `tomcatLogSaveSettings(mountPath!)` → Boolean | Writes config + triggers remount |
+All operations are nested under a single hierarchical `tomcatLog` namespace on the
+root `Query`/`Mutation` types (one field on each, returning `TomcatLogProviderQuery` /
+`TomcatLogProviderMutation`) — **not** flat root fields.
 
-All require `admin` permission.
+| Operation | Path | Notes |
+|-----------|------|-------|
+| Query | `tomcatLog { settings { mountPath, logPath } }` | `logPath` is read-only |
+| Query | `tomcatLog { tail(lines?) }` → `[String]` | Returns last N lines of `jahia.log` (default 200, capped 5000); used for live tail polling |
+| Mutation | `tomcatLog { saveSettings(mountPath!) }` → Boolean | Writes config + triggers remount |
+
+All operations require the `tomcatLogProviderAdmin` permission (shipped via the
+`tomcat-log-provider-administrator` role in `src/main/import/roles.xml`), enforced with
+`@GraphQLRequiresPermission("tomcatLogProviderAdmin")`.
 
 ## Admin UI
 
@@ -52,7 +58,7 @@ Input id: `#tlp-mount-path`.
 - Save button + **Ctrl+Enter** shortcut (fires when field non-empty)
 - **Browse in jContent** button: converts `/sites/{siteKey}/files{rest}` → `/jahia/jcontent/{siteKey}/en/media/files{rest}`; disabled when mount path doesn't match `/sites/*/files/*`
 - URL derived from component state (not Apollo cache) — avoids stale URL after mutation
-- Live tail viewer: polls `tomcatLogTail` query, auto-scrolls to bottom; pauses when user scrolls up
+- Live tail viewer: polls the `tomcatLog { tail }` query, auto-scrolls to bottom; pauses when user scrolls up
 
 ## Build
 

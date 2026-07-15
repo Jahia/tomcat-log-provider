@@ -11,6 +11,8 @@ describe('Tomcat Log Provider', () => {
     const saveSettings: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/mutation/addMountPoint.graphql');
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const getLogFile: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/query/getLogFile.graphql');
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const getTail: DocumentNode = require('graphql-tag/loader!../fixtures/graphql/query/getTail.graphql');
 
     before(() => {
         cy.login();
@@ -65,6 +67,18 @@ describe('Tomcat Log Provider', () => {
             cy.apollo({query: getSettings})
                 .its('data.tomcatLog.settings.mountPath')
                 .should('eq', testPath);
+        });
+
+        // S39: direct hierarchical tail query (previously only exercised indirectly via the viewer UI).
+        it('returns the log tail as a string array via the hierarchical query', () => {
+            cy.apollo({query: getTail, variables: {lines: 5}})
+                .its('data.tomcatLog.tail')
+                .should(tail => {
+                    expect(tail).to.be.an('array');
+                    // capped at requested lines (+ possible trailing empty from split(-1))
+                    expect(tail.length).to.be.at.most(6);
+                    tail.forEach((line: unknown) => expect(line).to.be.a('string'));
+                });
         });
     });
 

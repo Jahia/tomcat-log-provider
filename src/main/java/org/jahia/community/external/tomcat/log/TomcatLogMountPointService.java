@@ -106,7 +106,7 @@ public class TomcatLogMountPointService implements ManagedService {
             final TomcatLogDataSource dataSource = new TomcatLogDataSource();
             dataSource.setRoot();
 
-            tomcatProvider = new ExternalContentStoreProvider();
+            tomcatProvider = createProvider();
             tomcatProvider.setUserManagerService(userManagerService);
             tomcatProvider.setGroupManagerService(groupManagerService);
             tomcatProvider.setSitesService(sitesService);
@@ -126,8 +126,15 @@ public class TomcatLogMountPointService implements ManagedService {
         }
     }
 
+    // Test seam: overridable factory so the lifecycle (updated/remount/stop) can be unit-tested
+    // without a running Jahia repo. Production behaviour is unchanged — it still returns a real
+    // ExternalContentStoreProvider.
+    protected ExternalContentStoreProvider createProvider() {
+        return new ExternalContentStoreProvider();
+    }
+
     @Deactivate
-    private void stopProvider() {
+    void stopProvider() {
         if (tomcatProvider != null) {
             LOGGER.info("Stopping Tomcat log provider");
             tomcatProvider.stop();

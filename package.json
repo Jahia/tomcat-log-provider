@@ -1,6 +1,6 @@
 {
   "name": "@jahia/tomcat-log-provider",
-  "version": "2.0.2-SNAPSHOT",
+  "version": "2.0.7-SNAPSHOT",
   "scripts": {
     "build": "yarn webpack",
     "webpack": "webpack",
