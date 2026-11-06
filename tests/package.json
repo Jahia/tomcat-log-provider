@@ -60,6 +60,12 @@
   "author": "Jahia Customer Support Team <support@jahia.com>",
   "license": "MIT",
   "resolutions": {
+    "**/istanbul-lib-processinfo/rimraf/glob": "^14.0.3",
+    "**/nyc/glob": "^14.0.3",
+    "**/nyc/rimraf/glob": "^14.0.3",
+    "**/nyc/test-exclude/glob": "^14.0.3",
+    "**/nyc/test-exclude/minimatch": "^11.0.5",
+    "**/spawn-wrap/rimraf/glob": "^14.0.3",
     "@babel/core": "^7.29.6",
     "@babel/plugin-transform-modules-systemjs": "^7.29.4",
     "axios": "^1.21.0",
