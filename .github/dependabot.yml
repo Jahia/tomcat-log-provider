@@ -98,4 +98,9 @@ updates:
       - dependency-name: "org.osgi:*"
       - dependency-name: "com.github.eirslett:frontend-maven-plugin"
         update-types: ["version-update:semver-major"]
+      # JUnit 6 requires a Java 17 runtime; the module targets Java 11 (Jahia 8.2): stay on JUnit 5
+      - dependency-name: "org.junit.jupiter:*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "org.junit:*"
+        update-types: ["version-update:semver-major"]
 
